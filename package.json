@@ -1,0 +1,25 @@
+{
+  "name": "@nomjs/nomjs-registry",
+  "version": "0.0.1",
+  "author": "Sean McIntyre <smcintyre@xverba.ca>",
+  "description": "nom is not npm",
+  "contributors": [
+    {"name": "Daniela Baron","email": "dbaron@uncharted.software"}
+    {"name": "Michael Laccetti","email": "michael@laccetti.com"},
+    {"name": "Sean McIntyre","email": "s.mcintyre@xverba.ca"},
+  ],
+  "license":"MIT",
+  "repository" :{
+    "type" : "git",
+    "url" : "https://github.com/nomjs/nomjs-registry.git"
+  },
+  "main":"app.js",
+  "scripts": {
+    "test":"gulp test",
+    "debug":"node-debug $(which gulp) test-no-cov"
+  },
+  "dependencies": {
+  },
+  "devDependencies": {
+  }
+}
