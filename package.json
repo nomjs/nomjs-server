@@ -4,9 +4,9 @@
   "author": "Sean McIntyre <smcintyre@xverba.ca>",
   "description": "nom is not npm",
   "contributors": [
-    {"name": "Daniela Baron","email": "dbaron@uncharted.software"}
+    {"name": "Daniela Baron","email": "dbaron@uncharted.software"},
     {"name": "Michael Laccetti","email": "michael@laccetti.com"},
-    {"name": "Sean McIntyre","email": "s.mcintyre@xverba.ca"},
+    {"name": "Sean McIntyre","email": "s.mcintyre@xverba.ca"}
   ],
   "license":"MIT",
   "repository" :{
