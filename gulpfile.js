@@ -18,7 +18,7 @@ gulp.task('build', ['clean'], function () {
     .pipe(gulp.dest('dist'));
 });
 
-
+// BEGIN watch stuff
 let server;
 gulp.task('serve', ['build'], function() {
   if (server) {
@@ -41,7 +41,8 @@ process.on('exit', () => {
   }
 });
 gulp.task('watch', ['serve'], function() {
-
   gulp.watch('src/**/*.js', ['serve']);
 });
+// END watch stuff
+
 gulp.task('default', ['watch']);
