@@ -8,6 +8,7 @@ const Ravel = require('ravel');
 class Packages extends Ravel.Module {
 
   isScoped(id) {
+    // TODO should we check for the slash as well? This is faster, but maybe not sufficient.
     return id[0] === '@';
   }
 
