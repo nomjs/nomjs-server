@@ -20,15 +20,17 @@
     "debug":"node-debug $(which gulp) test-no-cov"
   },
   "dependencies": {
-    "ravel":"0.7.1"
+    "ravel":"0.7.2"
   },
   "devDependencies": {
     "babel":"6.3.26",
     "babel-eslint": "5.0.0-beta10",
     "babel-plugin-transform-decorators-legacy": "1.3.4",
+    "del": "2.2.0",
     "eslint": "1.10.3",
     "gulp":"3.9.0",
     "gulp-babel":"6.1.2",
-    "gulp-sourcemaps":"1.6.0"
+    "gulp-sourcemaps":"1.6.0",
+    "run-sequence": "1.1.5"
   }
 }

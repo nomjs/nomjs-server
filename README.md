@@ -24,3 +24,20 @@
   - While we would like to add package signatures and validation at some point, it is not an initial priority to alter the npm cli client (or create a new one). There are simply bigger fish to fry in the short-term.
 1. Authorization infrastructure
   - Rather than creating a complex registration and accounts system, and since `nom` is meant for open-source packages, we'll rely on GitHub orgs/usernames for namespacing/scoping.
+
+## Testing app
+
+1. Start redis:
+```bash
+$ docker run -d -p 6379:6379 redis:alpine
+```
+
+1. Run the server:
+```bash
+$ gulp
+```
+
+1. Ask for a package:
+```bash
+$ npm --loglevel=verbose --registry http://0.0.0.0:9080 install @raveljs/ravel
+```
