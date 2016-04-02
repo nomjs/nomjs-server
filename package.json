@@ -20,7 +20,7 @@
     "debug":"node-debug $(which gulp) test-no-cov"
   },
   "dependencies": {
-    "ravel":"0.7.3"
+    "ravel":"0.8.0"
   },
   "devDependencies": {
     "babel":"6.3.26",

@@ -2,6 +2,12 @@
 
 const Ravel = require('ravel');
 
+class UnscopedPackageError extends Ravel.Error {
+  constructor(msg) {
+    super(msg, constructor, 301);
+  }
+}
+
 /**
  * Logic for listing, retrieving, publishing packages
  */
@@ -10,6 +16,10 @@ class Packages extends Ravel.Module {
   isScoped(id) {
     // TODO should we check for the slash as well? This is faster, but maybe not sufficient.
     return id[0] === '@';
+  }
+
+  inRegistry(id) {
+    return Promise.reject(`Requested package ${id} is not in the nom registry.`);
   }
 
   /**
@@ -28,7 +38,7 @@ class Packages extends Ravel.Module {
         }));
       } else {
         // not a scoped package
-        reject(new this.ApplicationError.IllegalValue({
+        reject(new UnscopedPackageError({
           error: 'nom does not permit unscoped packages'
         }));
       }
