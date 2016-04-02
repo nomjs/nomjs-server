@@ -17,9 +17,10 @@
   "scripts": {
     "start": "cd dist && node --harmony-rest-parameters app.js",
     "test":"gulp test",
-    "debug":"node-debug $(which gulp) test-no-cov"
+    "debug":"gulp build && cd dist && node --harmony-rest-parameters --debug-brk app.js"
   },
   "dependencies": {
+    "koa-bodyparser": "2.0.1",
     "ravel":"0.8.0"
   },
   "devDependencies": {

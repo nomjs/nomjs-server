@@ -3,11 +3,11 @@
 const Resource = require('ravel').Resource;
 
 /**
- * Totally not implemented (on purpose). Will respond with NOT IMPLEMENTED.
+ * Responds to pings
  */
 class PingResource extends Resource {
   constructor() {
-    //TODO what is something?
+    //TODO what is the dash?
     super('/-/ping');
   }
 
