@@ -4,7 +4,13 @@ const Ravel = require('ravel');
 
 class UnscopedPackageError extends Ravel.Error {
   constructor(msg) {
-    super(msg, constructor, 301);
+    super(msg, constructor, 308);
+  }
+}
+
+class UnsubmittedPackageError extends Ravel.Error {
+  constructor(msg) {
+    super(msg, constructor, 307);
   }
 }
 
@@ -18,8 +24,17 @@ class Packages extends Ravel.Module {
     return id[0] === '@';
   }
 
-  inRegistry(id) {
-    return Promise.reject(`Requested package ${id} is not in the nom registry.`);
+  _retrieveInfo(id) { //eslint-disable-line no-unused-vars
+    return Promise.reject(new UnsubmittedPackageError({
+      error: `nom can't find the package you're looking for.\nPlease encourage the developer to submit it to nom!`
+    }));
+  }
+
+  /**
+   * Re-encode a package id to use urlencoded format for slashes
+   */
+  encode(id) {
+    return id.replace('/','%2f');;
   }
 
   /**
@@ -30,19 +45,13 @@ class Packages extends Ravel.Module {
   info(id) {
     this.log.info(`client asked for info on: ${id}`);
 
-    return new Promise((resolve, reject) => {
-      // is this a scoped package?
-      if (this.isScoped(id)) {
-        reject(new this.ApplicationError.NotFound({
-          error: `nom can't find the package you're looking for.\nPlease encourage the developer to submit it to nom!`
-        }));
-      } else {
-        // not a scoped package
-        reject(new UnscopedPackageError({
-          error: 'nom does not permit unscoped packages'
-        }));
-      }
-    });
+    if (this.isScoped(id)) {
+      return this._retrieveInfo(id);
+    } else {
+      return Promise.reject(new UnscopedPackageError({
+        error: 'nom does not permit unscoped packages'
+      }));
+    }
   }
 }
 

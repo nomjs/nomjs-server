@@ -3,7 +3,7 @@
 const Ravel = require('ravel');
 const Resource = Ravel.Resource;
 const inject = Ravel.inject;
-const before = Resource.before;
+// const before = Resource.before;
 
 /**
  * package info, publishing, etc.
@@ -25,7 +25,8 @@ class PackageInfoResource extends Resource {
     .catch((err) => {
       switch(err.constructor.name) {
         case 'UnscopedPackageError':
-          ctx.set('Location', `https://registry.npmjs.org/${ctx.params.id}`);
+        case 'UnsubmittedPackageError':
+          ctx.set('Location', `https://registry.npmjs.org/${this.packages.encode(ctx.params.id)}`);
         default:
           // rethrow
           return Promise.reject(err);
