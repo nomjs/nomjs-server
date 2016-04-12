@@ -3,16 +3,17 @@
 const Ravel = require('ravel');
 const Resource = Ravel.Resource;
 const inject = Ravel.inject;
-// const before = Resource.before;
+const before = Resource.before;
 
 /**
  * package info, publishing, etc.
  */
-@inject('packages')
-class PackageInfoResource extends Resource {
-  constructor(packages) {
+@inject('packages', 'koa-bodyparser')
+class PackageResource extends Resource {
+  constructor(packages, bodyParser) {
     super('/');
     this.packages = packages;
+    this.bodyParser = bodyParser();
   }
 
   /**
@@ -33,6 +34,17 @@ class PackageInfoResource extends Resource {
       }
     });
   }
+
+  @before('bodyParser')
+  put(ctx) {
+    console.log(`user attempting to publish ${ctx.params.id}`);
+    console.dir(ctx.request.headers);
+    console.dir(ctx.request.body);
+    ctx.status = 500;
+    ctx.body = {
+      error: 'not implemented yet :)'
+    };
+  }
 }
 
-module.exports = PackageInfoResource;
+module.exports = PackageResource;
