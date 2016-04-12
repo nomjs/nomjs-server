@@ -41,3 +41,8 @@ $ gulp
 ```bash
 $ npm --loglevel=verbose --registry http://0.0.0.0:9080 install @raveljs/ravel
 ```
+
+1. Publish a package:
+```bash
+$ npm --loglevel=verbose  --registry http://0.0.0.0:9080 publish .
+```
