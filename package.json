@@ -21,7 +21,7 @@
   },
   "dependencies": {
     "koa-bodyparser": "2.0.1",
-    "ravel":"0.8.1"
+    "ravel":"0.9.0"
   },
   "devDependencies": {
     "babel":"6.3.26",
