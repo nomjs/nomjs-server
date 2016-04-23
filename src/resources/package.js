@@ -22,8 +22,9 @@ class PackageResource extends Resource {
    *  - https://registry.npmjs.org/@raveljs%2fravel
    */
   get(ctx) {
-    return this.packages.info(ctx.params.id)
+    return this.packages.info(ctx.params.id, ctx.query)
     .catch((err) => {
+      console.log(err);
       switch(err.constructor.name) {
         case 'UnscopedPackageError':
         case 'UnsubmittedPackageError':

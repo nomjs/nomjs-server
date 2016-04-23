@@ -4,34 +4,44 @@
   "author": "Sean McIntyre <smcintyre@xverba.ca>",
   "description": "nom is not npm",
   "contributors": [
-    {"name": "Daniela Baron","email": "dbaron@uncharted.software"},
-    {"name": "Michael Laccetti","email": "michael@laccetti.com"},
-    {"name": "Sean McIntyre","email": "s.mcintyre@xverba.ca"}
+    {
+      "name": "Daniela Baron",
+      "email": "dbaron@uncharted.software"
+    },
+    {
+      "name": "Michael Laccetti",
+      "email": "michael@laccetti.com"
+    },
+    {
+      "name": "Sean McIntyre",
+      "email": "s.mcintyre@xverba.ca"
+    }
   ],
-  "license":"MIT",
-  "repository" :{
-    "type" : "git",
-    "url" : "https://github.com/nomjs/nomjs-registry.git"
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nomjs/nomjs-registry.git"
   },
-  "main":"dist/app.js",
+  "main": "dist/app.js",
   "scripts": {
     "start": "cd dist && node --harmony-rest-parameters app.js",
-    "test":"gulp test",
-    "debug":"gulp build && cd dist && node --harmony-rest-parameters --debug-brk app.js"
+    "test": "gulp test",
+    "debug": "gulp build && cd dist && node --harmony-rest-parameters --debug-brk app.js"
   },
   "dependencies": {
     "koa-bodyparser": "2.0.1",
-    "ravel":"0.11.0"
+    "ravel": "0.11.0",
+    "request-promise": "^3.0.0"
   },
   "devDependencies": {
-    "babel":"6.3.26",
+    "babel": "6.3.26",
     "babel-eslint": "5.0.0-beta10",
     "babel-plugin-transform-decorators-legacy": "1.3.4",
     "del": "2.2.0",
     "eslint": "1.10.3",
-    "gulp":"3.9.0",
-    "gulp-babel":"6.1.2",
-    "gulp-sourcemaps":"1.6.0",
+    "gulp": "3.9.0",
+    "gulp-babel": "6.1.2",
+    "gulp-sourcemaps": "1.6.0",
     "run-sequence": "1.1.5"
   }
 }
