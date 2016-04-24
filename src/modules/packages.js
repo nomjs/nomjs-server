@@ -15,6 +15,12 @@ class UnsubmittedPackageError extends Ravel.Error {
   }
 }
 
+class NpmProxyError extends Ravel.Error {
+  constructor(msg) {
+    super(msg, constructor, 500);
+  }
+}
+
 /**
  * Logic for listing, retrieving, publishing packages
  */
@@ -44,14 +50,15 @@ class Packages extends Ravel.Module {
       uri: `https://registry.npmjs.org/${this.encode(id)}`,
       json: true
     };
+
+    this.log.debug(`Proxying to npm: ${rpOptions.uri}`);
     return new Promise((resolve, reject) => {
       rp(rpOptions)
-        .then((response) => {
-          resolve(response);
-        })
+        .then((response) => resolve(response))
         .catch((err) => {
-          // TODO return a specific error like NpmProxyError
-          reject(new Error({error: err}));
+          let errMessage = `Unable to retrieve package info for ${id} from npm`;
+          this.log.error(errMessage, err);
+          reject(new NpmProxyError({error: errMessage}));
         });
     });
   }
