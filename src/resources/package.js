@@ -27,8 +27,6 @@ class PackageResource extends Resource {
   get(ctx) {
     return this.packages.info(ctx.params.id, ctx.query)
       .then((packageInfo) => {
-        // FIXME It is successful, but: Unhandled rejection Error: Can't set headers after they are sent.
-        console.log('=== PACKAGE RESOURCE SUCCESS ===');
         ctx.status = 200;
         ctx.body = packageInfo;
       })
