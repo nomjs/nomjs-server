@@ -67,7 +67,8 @@ class Packages extends Ravel.Module {
    * Retrieve package information based on a package name
    * @param id {String} the package name (such as @raveljs/ravel).
    * @param query {Object} optional, if specifies proxynpm then will retrieve package info from npm.
-   * @return {Promise} resolves if the package is in the nom registry, rejects otherwise.
+   * @return {Promise} resolves if the package is in the nom registry, or if proxynpm is requested
+   *                   and the package is found in npm, rejects otherwise.
    */
   info(id, query) {
     const opts = query || {};  // no default parameters in node yet
