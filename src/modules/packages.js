@@ -38,16 +38,32 @@ class Packages extends Ravel.Module {
     return id.replace('/','%2f');;
   }
 
+  // TODO: make it json instead of text but its actually returning!
   _retrieveInfoFromNpm(id) {
-    // TODO env var instead of hard coding registry url?
-    return rp(`https://registry.npmjs.org/${this.encode(id)}`)
-      .then(function(response) {
-        return Promise.resolve(response);
-      })
-      .catch(function(err) {
-        return Promise.reject(new Error({error: err}));
-      });
+    return new Promise((resolve, reject) => {
+      rp(`https://registry.npmjs.org/${this.encode(id)}`)
+        .then((response) => {
+          resolve(response);
+        })
+        .catch((err) => {
+          reject(new Error({error: err}));
+        });
+    });
   }
+  // _retrieveInfoFromNpm(id) {
+  //   // TODO env var instead of hard coding registry url?
+  //   return rp(`https://registry.npmjs.org/${this.encode(id)}`)
+  //     .then(function(response) {
+  //       console.log('=== NPM PROXY SUCCESS ===');
+  //       return response;
+  //     })
+  //     .catch(function(err) {
+  //       // TODO return a specific error like NpmProxyError
+  //       // return Promise.reject(new Error({error: err}));
+  //       console.log('=== NPM PROXY ERROR ===');
+  //       return new Error({error: err});
+  //     });
+  // }
 
   /**
    * Retrieve package information based on a package name
