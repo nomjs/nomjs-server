@@ -27,15 +27,36 @@
 
 ## Testing app
 
-1. Start redis:
+Start app:
 ```bash
-$ docker run -d -p 6379:6379 redis:alpine
+$ docker-compose up
 ```
 
-1. Run the server:
+### Log in to nom
+
+Log in to `nom` with your GitHub username/password (won't work if you have two-factor auth turned on):
+
+*Note: this method will automatically create an OAuth token for `nom` with the read:org scope for future use*
+
 ```bash
-$ gulp
+$ npm --loglevel=verbose --registry http://0.0.0.0:9080 login
+Username: (GitHub username)
+Password: (GitHub password)
+Email: (your email)
 ```
+
+Log in to `nom` with a GitHub personal access token (if you have two-factor auth turned on):
+
+Create a personal access token with the read:org scope here: [https://github.com/settings/tokens](https://github.com/settings/tokens)
+
+```bash
+$ npm --loglevel=verbose --registry http://0.0.0.0:9080 login
+Username: (oauth)
+Password: (GitHub personal access token with read:org scope)
+Email: (your email)
+```
+
+### Miscellaneous Operations
 
 1. Ask for a package:
 ```bash

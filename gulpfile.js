@@ -4,16 +4,28 @@ const gulp = require('gulp');
 const sourcemaps = require('gulp-sourcemaps');
 const babel = require('gulp-babel');
 const spawn = require('child_process').spawn;
+const eslint = require('gulp-eslint');
 const del = require('del');
 
 gulp.task('clean', function() {
   return del(['dist/**']);
 });
 
+gulp.task('lint', function() {
+  return gulp.src(['./src/**/*.js', './test/**/*.js', 'gulpfile.js'])
+             .pipe(eslint())
+             .pipe(eslint.format());
+            //  .pipe(eslint.failAfterError());
+});
+
 gulp.task('build', ['clean'], function () {
   return gulp.src('src/**/*.js')
     .pipe(sourcemaps.init())
     .pipe(babel())
+    .on('error', function(e) {
+      console.error(e.stack);
+      this.emit('end');
+    })
     .pipe(sourcemaps.write('.'))
     .pipe(gulp.dest('dist'));
 });
@@ -40,8 +52,8 @@ process.on('exit', () => {
     server.kill();
   }
 });
-gulp.task('watch', ['serve'], function() {
-  gulp.watch('src/**/*.js', ['serve']);
+gulp.task('watch', ['lint', 'serve'], function() {
+  gulp.watch('src/**/*.js', {interval: 1000, mode: 'poll'}, ['lint', 'serve']);
 });
 // END watch stuff
 

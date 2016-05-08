@@ -1,0 +1,18 @@
+version: '2'
+
+services:
+  redis:
+    image: redis
+    expose:
+      - 6379
+
+  nomjs-registry:
+    build: .
+    environment:
+      NODE_ENV: development
+    ports:
+      - 9080:9080
+    volumes:
+      - ${PWD}/:/nomjs-registry
+    links:
+      - redis

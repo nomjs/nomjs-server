@@ -8,7 +8,7 @@ const before = Resource.before;
 /**
  * package info, publishing, etc.
  */
-@inject('packages', 'koa-bodyparser')
+@inject('packages', 'koa-better-body')
 class PackageResource extends Resource {
   constructor(packages, bodyParser) {
     super('/');
