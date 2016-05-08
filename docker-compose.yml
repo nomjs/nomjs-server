@@ -10,8 +10,8 @@ services:
     build: .
     environment:
       NODE_ENV: development
-    expose:
-      - 9080
+    ports:
+      - 9080:9080
     volumes:
       - ${PWD}/:/nomjs-registry
     links:
