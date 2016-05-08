@@ -34,6 +34,8 @@ class UserResource extends Resource {
       );
     }
     return promise.then((token) => {
+      // We don't store this credential.
+      // Web application flow will be used to get a token for nom web UI: https://developer.github.com/v3/oauth/#web-application-flow
       ctx.status = Ravel.httpCodes.CREATED;
       ctx.response.body = {
         ok: true,
