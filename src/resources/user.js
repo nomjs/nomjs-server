@@ -7,7 +7,7 @@ const before = Resource.before;
 /**
  * Endpoints for user login, etc.
  */
-@inject('koa-bodyparser')
+@inject('koa-better-body')
 class UserResource extends Resource {
   constructor(bodyParser) {
     //TODO what is the dash?

@@ -34,7 +34,7 @@ class Packages extends Ravel.Module {
    * Re-encode a package id to use urlencoded format for slashes
    */
   encode(id) {
-    return id.replace('/','%2f');;
+    return id.replace('/','%2f');
   }
 
   /**

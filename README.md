@@ -27,14 +27,9 @@
 
 ## Testing app
 
-1. Start redis:
+1. Start app:
 ```bash
-$ docker run -d -p 6379:6379 redis:alpine
-```
-
-1. Run the server:
-```bash
-$ gulp
+$ docker-compose up
 ```
 
 1. Ask for a package:

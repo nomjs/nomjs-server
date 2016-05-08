@@ -20,8 +20,8 @@
     "debug":"gulp build && cd dist && node --harmony-rest-parameters --debug-brk app.js"
   },
   "dependencies": {
-    "koa-bodyparser": "2.0.1",
-    "ravel":"0.11.0"
+    "koa-better-body": "2.0.1",
+    "ravel":"0.13.0"
   },
   "devDependencies": {
     "babel":"6.3.26",
@@ -29,7 +29,7 @@
     "babel-plugin-transform-decorators-legacy": "1.3.4",
     "del": "2.2.0",
     "eslint": "1.10.3",
-    "gulp":"3.9.0",
+    "gulp":"3.9.1",
     "gulp-babel":"6.1.2",
     "gulp-sourcemaps":"1.6.0",
     "run-sequence": "1.1.5"
