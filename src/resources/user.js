@@ -34,12 +34,12 @@ class UserResource extends Resource {
       );
     }
     return promise.then((token) => {
-      // now use token to get user profile
-      return this.github.getProfile(token);
-    }).then((profile) => {
-      // Done!
       ctx.status = Ravel.httpCodes.CREATED;
-      ctx.response.body = {name: profile.login, profile: profile.html_url};
+      ctx.response.body = {
+        ok: true,
+        id: 'org.couchdb.user:oauth',
+        'token': token
+      };
     }).catch((err) => {
       this.log.error(err.stack);
     });

@@ -23,6 +23,16 @@ class GitHubAuth extends Module {
   }
 
   /**
+   * Synchronous OAuth login. Only works for the next request.
+   */
+  tokenAuth(token) {
+    this.github.authenticate({
+      type: 'oauth',
+      token: token
+    });
+  }
+
+  /**
    * Verify that an OAuth token gives us access to the correct scopes
    *
    * @param {String} token
@@ -80,10 +90,7 @@ class GitHubAuth extends Module {
    */
   getProfile(token) {
     return new Promise((resolve, reject) => {
-      this.github.authenticate({
-        type: 'oauth',
-        token: token
-      });
+      this.tokenAuth(token);
       this.github.user.get({}, (err, result) => {
         if (err) {reject(err);} else {resolve(result);}
       });
@@ -97,10 +104,7 @@ class GitHubAuth extends Module {
    */
   getOrgs(token) {
     return new Promise((resolve, reject) => {
-      this.github.authenticate({
-        type: 'oauth',
-        token: token
-      });
+      this.tokenAuth(token);
       this.github.user.getOrgs({}, (err, result) => {
         if (err) {reject(err);} else {resolve(result);}
       });

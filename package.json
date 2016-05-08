@@ -22,7 +22,8 @@
   "dependencies": {
     "github": "0.2.4",
     "koa-better-body": "2.0.1",
-    "ravel":"0.13.0"
+    "ravel": "0.13.0",
+    "rethinkdb": "2.3.1"
   },
   "devDependencies": {
     "babel":"6.5.2",
