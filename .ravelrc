@@ -2,5 +2,8 @@
   "redis port": 6379,
   "redis host": "redis",
   "port": "9080",
-  "keygrip keys": ["mysecret"]
+  "keygrip keys": ["mysecret"],
+  "rethink port": 28015,
+  "rethink host": "rethinkdb",
+  "rethink db name": "nomjs"
 }

@@ -54,6 +54,7 @@ process.on('exit', () => {
 });
 gulp.task('watch', ['lint', 'serve'], function() {
   gulp.watch('src/**/*.js', {interval: 1000, mode: 'poll'}, ['lint', 'serve']);
+  gulp.watch('.ravelrc', {interval: 1000, mode: 'poll'}, ['serve']);
 });
 // END watch stuff
 

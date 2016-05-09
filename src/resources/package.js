@@ -46,30 +46,19 @@ class PackageResource extends Resource {
 
   @before('githubProfile', 'bodyParser')
   put(ctx) {
-    const attachments = (c) => c.request.fields._attachments;
-    if (
-      ctx.request.fields &&
-      typeof attachments(ctx) === 'object' &&
-      Object.keys(attachments(ctx)).length === 1 &&
-      attachments(ctx)[Object.keys(attachments(ctx))[0]].length <= this.params.get('max package size bytes')
-    ) {
-      this.log.info(`user ${ctx.user.login} publishing ${ctx.params.id}`);
-      const org = this.packages.getScope(ctx.params.id);
+    this.log.info(`user ${ctx.user.login} publishing ${ctx.params.id}`);
+    const org = this.packages.getScope(ctx.params.id);
 
-      let promise = Promise.resolve();
-      // if scope is an org, make sure user is in org, otherwise publish under user scope
-      if (org !== ctx.user.login) {
-        promise = this.github.userInOrg(ctx.token, org);
-      }
-
-      // TODO actually publish package
-      return promise.then(() => {
-        return this.packages.publish(ctx.request.fields);
-      });
-    } else {
-      throw new this.ApplicationError.IllegalValueError(
-        `Package tarball missing or is too big (max size = ${this.params.get('max package size bytes')})`);
+    let promise = Promise.resolve();
+    // if scope is an org, make sure user is in org, otherwise publish under user scope
+    if (org !== ctx.user.login) {
+      promise = this.github.userInOrg(ctx.token, org);
     }
+
+    // actually publish package
+    return promise.then(() => {
+      return this.packages.publish(ctx.request.fields);
+    });
   }
 }
 

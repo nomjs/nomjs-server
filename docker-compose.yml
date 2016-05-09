@@ -6,6 +6,12 @@ services:
     expose:
       - 6379
 
+  rethinkdb:
+    image: rethinkdb:2.3
+    expose:
+      - 28015
+      - 29015
+
   nomjs-registry:
     build: .
     environment:
@@ -16,3 +22,4 @@ services:
       - ${PWD}/:/nomjs-registry
     links:
       - redis
+      - rethinkdb

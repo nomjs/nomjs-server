@@ -111,6 +111,15 @@ class Packages extends Ravel.Module {
    * @return {Promise} resolves when package publish is compmlete, rejects with any errors
    */
   publish(args) { //eslint-disable-line no-unused-vars
+    console.dir(args);
+    // TODO reject attachment if size is too big, but check all of them - not just the first one
+    // const attachments = (c) => c.request.fields._attachments;
+    // if (
+    //   ctx.request.fields &&
+    //   typeof attachments(ctx) === 'object' &&
+    //   Object.keys(attachments(ctx)).length === 1 &&
+    //   attachments(ctx)[Object.keys(attachments(ctx))[0]].length <= this.params.get('max package size bytes')
+    // )
     return Promise.reject(new this.ApplicationError.NotImplemented('Not implemented yet :)'));
   }
 }
