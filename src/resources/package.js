@@ -27,23 +27,31 @@ class PackageResource extends Resource {
    *  - https://registry.npmjs.org/ravel?npmproxy=true
    */
   get(ctx) {
-    return this.packages.info(ctx.params.id, ctx.query)
-      .then((packageInfo) => {
-        ctx.status = 200;
-        ctx.body = packageInfo;
-      })
-      .catch((err) => {
-        switch(err.constructor.name) {
-          case 'UnscopedPackageError':
-          case 'UnsubmittedPackageError':
-            ctx.set('Location', `https://registry.npmjs.org/${this.packages.encode(ctx.params.id)}`);
-          default:
-            // rethrow
-            return Promise.reject(err);
-        }
-      });
+    // just redirect if the user asks to search npm directly
+    if (ctx.query.proxynpm) {
+      ctx.set('Location', `https://registry.npmjs.org/${this.packages.encode(ctx.params.id)}`);
+    } else {
+      return this.packages.info(ctx.params.id, ctx.query)
+        .then((packageInfo) => {
+          ctx.status = 200;
+          ctx.body = packageInfo;
+        })
+        .catch((err) => {
+          switch(err.constructor.name) {
+            case 'UnscopedPackageError':
+            case 'UnsubmittedPackageError':
+              ctx.set('Location', `https://registry.npmjs.org/${this.packages.encode(ctx.params.id)}`);
+            default:
+              // rethrow
+              return Promise.reject(err);
+          }
+        });
+    }
   }
 
+  /**
+   * Publish a package (either a new package, or a new version of an existing package)
+   */
   @before('githubProfile', 'bodyParser')
   put(ctx) {
     this.log.info(`user ${ctx.user.login} publishing ${ctx.params.id}`);
