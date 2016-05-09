@@ -22,19 +22,26 @@ class PackageResource extends Resource {
    * Examples:
    *  - https://registry.npmjs.org/ravel
    *  - https://registry.npmjs.org/@raveljs%2fravel
+   *
+   * If a package is in npm and nom should proxy rather than return a redirect:
+   *  - https://registry.npmjs.org/ravel?npmproxy=true
    */
   get(ctx) {
-    return this.packages.info(ctx.params.id)
-    .catch((err) => {
-      switch(err.constructor.name) {
-        case 'UnscopedPackageError':
-        case 'UnsubmittedPackageError':
-          ctx.set('Location', `https://registry.npmjs.org/${this.packages.encode(ctx.params.id)}`);
-        default:
-          // rethrow
-          return Promise.reject(err);
-      }
-    });
+    return this.packages.info(ctx.params.id, ctx.query)
+      .then((packageInfo) => {
+        ctx.status = 200;
+        ctx.body = packageInfo;
+      })
+      .catch((err) => {
+        switch(err.constructor.name) {
+          case 'UnscopedPackageError':
+          case 'UnsubmittedPackageError':
+            ctx.set('Location', `https://registry.npmjs.org/${this.packages.encode(ctx.params.id)}`);
+          default:
+            // rethrow
+            return Promise.reject(err);
+        }
+      });
   }
 
   @before('githubProfile', 'bodyParser')
