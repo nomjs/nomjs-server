@@ -1,7 +1,7 @@
 'use strict';
 
 const Ravel = require('ravel');
-const rp = require('request-promise');
+const inject = Ravel.inject;
 
 class UnscopedPackageError extends Ravel.Error {
   constructor(msg) {
@@ -24,7 +24,13 @@ class NpmProxyError extends Ravel.Error {
 /**
  * Logic for listing, retrieving, publishing packages
  */
+@inject('request-promise')
 class Packages extends Ravel.Module {
+
+  constructor(rp) {
+    super();
+    this.rp = rp;
+  }
 
   isScoped(id) {
     // TODO should we check for the slash as well? This is faster, but maybe not sufficient.
@@ -61,7 +67,7 @@ class Packages extends Ravel.Module {
 
     this.log.debug(`Proxying to npm: ${rpOptions.uri}`);
     return new Promise((resolve, reject) => {
-      rp(rpOptions)
+      this.rp(rpOptions)
         .then((response) => resolve(response))
         .catch((err) => {
           let errMessage = `Unable to retrieve package info for ${id} from npm`;
