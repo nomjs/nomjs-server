@@ -24,6 +24,14 @@ class Packages extends Ravel.Module {
     return id[0] === '@';
   }
 
+  getScope(id) {
+    const scope = id.match(/^@([\w\-]+)\/([\w\-]+)$/);
+    if (scope === null) {
+      throw new UnscopedPackageError(`Package id ${id} is not a scoped package`);
+    }
+    return scope[1];
+  }
+
   _retrieveInfo(id) { //eslint-disable-line no-unused-vars
     return Promise.reject(new UnsubmittedPackageError({
       error: `nom can't find the package you're looking for.\nPlease encourage the developer to submit it to nom!`
@@ -52,6 +60,21 @@ class Packages extends Ravel.Module {
         error: 'nom does not permit unscoped packages'
       }));
     }
+  }
+
+  /**
+   * Create or update package info and publish tarballs to blob store
+   * @param {Object} args:
+   *   @param {String} name
+   *   @param {String} description
+   *   @param {Object} dist-tags
+   *   @param {Object} versions
+   *   @param {String} readme
+   *   @param {Object} _attachments
+   * @return {Promise} resolves when package publish is compmlete, rejects with any errors
+   */
+  publish(args) { //eslint-disable-line no-unused-vars
+    return Promise.reject(new this.ApplicationError.NotImplemented('Not implemented yet :)'));
   }
 }
 

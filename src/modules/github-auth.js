@@ -4,6 +4,12 @@ const Ravel = require('ravel');
 const inject = Ravel.inject;
 const Module = Ravel.Module;
 
+class UserOrgError extends Ravel.Error {
+  constructor(orgname) {
+    super(`User is not in org ${orgname}`, constructor, Ravel.httpCodes.FORBIDDEN);
+  }
+}
+
 @inject('github')
 class GitHubAuth extends Module {
   constructor(GitHubApi) {
@@ -98,6 +104,27 @@ class GitHubAuth extends Module {
   }
 
   /**
+   * Middleware for populating koa context with user profile
+   * based on an auth token.
+   */
+  profileMiddleware() {
+    const self = this;
+    const bearerRegex = /^Bearer (\w+)$/;
+    return function*(next) {
+      const token = this.headers.authorization.match(bearerRegex);
+      if (token) {
+        this.token = token[1];
+        yield self.getProfile(token[1]).then((profile) => {
+          this.user = profile;
+        });
+        yield next;
+      } else {
+        throw new self.ApplicationError.IllegalValueError('GitHub OAuth bearer token not found in request headers.');
+      }
+    };
+  }
+
+  /**
    * Retrieve a list of orgs the user represented by this token belongs to
    * @param {String} token the OAuth token
    * @return {Promise} resolves with an Array[Object] of orgs if the token works, rejects otherwise
@@ -108,6 +135,20 @@ class GitHubAuth extends Module {
       this.github.user.getOrgs({}, (err, result) => {
         if (err) {reject(err);} else {resolve(result);}
       });
+    });
+  }
+
+  /**
+   * @param {String} token the OAuth token
+   * @return {Promise} resolves if the given user is in the specified org, rejects otherwise
+   */
+  userInOrg(token, orgName) {
+    return this.getOrgs(token).then((orgs) => {
+      if (orgs.filter(o => o.login === orgName).length === 1) {
+        return Promise.resolve();
+      } else {
+        return Promise.reject(new UserOrgError(orgName));
+      }
     });
   }
 }

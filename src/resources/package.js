@@ -8,12 +8,14 @@ const before = Resource.before;
 /**
  * package info, publishing, etc.
  */
-@inject('packages', 'koa-better-body')
+@inject('koa-better-body', 'packages', 'github-auth')
 class PackageResource extends Resource {
-  constructor(packages, bodyParser) {
+  constructor(bodyParser, packages, github) {
     super('/');
-    this.packages = packages;
     this.bodyParser = bodyParser();
+    this.packages = packages;
+    this.github = github;
+    this.githubProfile = github.profileMiddleware();
   }
 
   /**
@@ -35,15 +37,32 @@ class PackageResource extends Resource {
     });
   }
 
-  @before('bodyParser')
+  @before('githubProfile', 'bodyParser')
   put(ctx) {
-    console.log(`user attempting to publish ${ctx.params.id}`);
-    console.dir(ctx.request.headers);
-    console.dir(ctx.request.body);
-    ctx.status = 500;
-    ctx.body = {
-      error: 'not implemented yet :)'
-    };
+    const attachments = (c) => c.request.fields._attachments;
+    if (
+      ctx.request.fields &&
+      typeof attachments(ctx) === 'object' &&
+      Object.keys(attachments(ctx)).length === 1 &&
+      attachments(ctx)[Object.keys(attachments(ctx))[0]].length <= this.params.get('max package size bytes')
+    ) {
+      this.log.info(`user ${ctx.user.login} publishing ${ctx.params.id}`);
+      const org = this.packages.getScope(ctx.params.id);
+
+      let promise = Promise.resolve();
+      // if scope is an org, make sure user is in org, otherwise publish under user scope
+      if (org !== ctx.user.login) {
+        promise = this.github.userInOrg(ctx.token, org);
+      }
+
+      // TODO actually publish package
+      return promise.then(() => {
+        return this.packages.publish(ctx.request.fields);
+      });
+    } else {
+      throw new this.ApplicationError.IllegalValueError(
+        `Package tarball missing or is too big (max size = ${this.params.get('max package size bytes')})`);
+    }
   }
 }
 
