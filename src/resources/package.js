@@ -65,7 +65,10 @@ class PackageResource extends Resource {
 
     // actually publish package
     return promise.then(() => {
-      return this.packages.publish(ctx.request.fields);
+      return this.packages.publish(ctx.user, ctx.request.fields);
+    }).then(() => {
+      ctx.status = 201;
+      ctx.body = {status: 'ok'};
     });
   }
 }

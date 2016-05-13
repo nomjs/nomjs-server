@@ -1,6 +1,8 @@
 'use strict';
 
 const Ravel = require('ravel');
+const inject = Ravel.inject;
+const Module = Ravel.Module;
 
 class UnscopedPackageError extends Ravel.Error {
   constructor(msg) {
@@ -17,10 +19,12 @@ class UnsubmittedPackageError extends Ravel.Error {
 /**
  * Logic for listing, retrieving, publishing packages
  */
-class Packages extends Ravel.Module {
+@inject('rethink')
+class Packages extends Module {
 
-  constructor() {
+  constructor(rethink) {
     super();
+    this.rethink = rethink;
   }
 
   isScoped(id) {
@@ -37,9 +41,17 @@ class Packages extends Ravel.Module {
   }
 
   _retrieveInfo(id) { //eslint-disable-line no-unused-vars
-    return Promise.reject(new UnsubmittedPackageError({
-      error: `nom can't find the package you're looking for.\nPlease encourage the developer to submit it to nom!`
-    }));
+    return this.rethink.getPackage(id)
+      .catch((err) => {
+        if (err instanceof this.ApplicationError.NotFound) {
+          // create new package;
+          return Promise.reject(new UnsubmittedPackageError({
+            error: `nom can't find the package you're looking for.\nPlease encourage the developer to submit it to nom!`
+          }));
+        } else {
+          return Promise.reject(err);
+        }
+      });
   }
 
   /**
@@ -66,8 +78,70 @@ class Packages extends Ravel.Module {
     }
   }
 
+  getLatestPackageInfo(npmPackageInfo) {
+    try {
+      const semver = npmPackageInfo['dist-tags'].latest;
+      if (semver === null) { throw new Error();}
+      return npmPackageInfo.versions[semver];
+    } catch (err) {
+      throw new Error('no version with tag \'latest\'');
+    }
+  }
+
+  /**
+   * Creates a new package and publishes tarball to blob store
+   * @param {Object} publisher a github user profile representing the "publisher"
+   * @param {Object} args a package object direct from the npm client, containing:
+   *   @param {String} name
+   *   @param {String} description
+   *   @param {Object} dist-tags
+   *   @param {Object} versions
+   *   @param {String} readme
+   *   @param {Object} _attachments
+   * @return {Promise} resolves when package publish is creation, rejects with any errors
+   */
+  createPackage(publisher, args) {
+    console.dir(publisher);
+    try {
+      const pInfo = Object.create(null);
+      const currentTime = new Date();
+      const latest = this.getLatestPackageInfo(args);
+      // copy over things we need
+      pInfo.name = args.name;
+      if (args.description) { pInfo.description = args.description; }
+      pInfo['dist-tags'] = args['dist-tags'];
+      pInfo.versions = args.versions;
+      if (args.readme) { pInfo.readme = args.readme; }
+      pInfo.maintainers = [{
+        id: publisher.id,
+        name: publisher.login,
+        email: publisher.email,
+        profile: publisher.html_url
+      }]; // TODO Concat others on update .
+      pInfo.time = {
+        modified: currentTime.toISOString(),
+        created: currentTime.toISOString()
+      };
+      pInfo.time[latest.version] = currentTime.toISOString();
+      if (latest.contributors) { pInfo.contributors = latest.contributors; }
+      if (latest.author) { pInfo.author = latest.author; }
+      if (latest.readmeFilename) { pInfo.readmeFilename = latest.readmeFilename; }
+      if (latest.homepage) { pInfo.homepage = latest.homepage; }
+      if (latest.repository) { pInfo.repository = latest.repository; }
+      if (latest.bugs) { pInfo.bugs = latest.bugs; }
+      if (latest.license) { pInfo.license = latest.license; }
+      if (latest.keywords) { pInfo.keywords = latest.keywords; }
+      pInfo.users = {}; // TODO what is this?
+      // TODO reject attachment if size is too big, but check all of them - not just the first one
+      return this.rethink.createPackage(pInfo);
+    } catch (err) {
+      return Promise.reject(err);
+    }
+  }
+
   /**
    * Create or update package info and publish tarballs to blob store
+   * @param {Object} publisher a github user profile representing the "publisher"
    * @param {Object} args:
    *   @param {String} name
    *   @param {String} description
@@ -75,19 +149,23 @@ class Packages extends Ravel.Module {
    *   @param {Object} versions
    *   @param {String} readme
    *   @param {Object} _attachments
-   * @return {Promise} resolves when package publish is compmlete, rejects with any errors
+   * @return {Promise} resolves when package publish is complete, rejects with any errors
    */
-  publish(args) { //eslint-disable-line no-unused-vars
-    console.dir(args);
+  publish(publisher,  args) {
+    return this.rethink.getPackage(args.name)
+      .then(() => {
+        // TODO implement package document updating
+        console.log('TODO implement package document updating');
+      })
+      .catch((err) => {
+        if (err instanceof this.ApplicationError.NotFound) {
+          // create new package;
+          return this.createPackage(publisher, args);
+        } else {
+          return Promise.reject(err);
+        }
+      });
     // TODO reject attachment if size is too big, but check all of them - not just the first one
-    // const attachments = (c) => c.request.fields._attachments;
-    // if (
-    //   ctx.request.fields &&
-    //   typeof attachments(ctx) === 'object' &&
-    //   Object.keys(attachments(ctx)).length === 1 &&
-    //   attachments(ctx)[Object.keys(attachments(ctx))[0]].length <= this.params.get('max package size bytes')
-    // )
-    return Promise.reject(new this.ApplicationError.NotImplemented('Not implemented yet :)'));
   }
 }
 

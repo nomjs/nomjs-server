@@ -24,9 +24,11 @@ class RethinkStorage extends Module {
     });
   }
 
-  createTable(name) {
+  createTable(name, pkey) {
     return new Promise((resolve, reject) => {
-      this.r.tableCreate(name).run(this.conn, (err) => {
+      this.r.tableCreate(name, {
+        primaryKey: pkey ? pkey : 'id'
+      }).run(this.conn, (err) => {
         if (err && !err.message.includes('already exists')) {
           reject(err);
         } else {
@@ -63,7 +65,7 @@ class RethinkStorage extends Module {
         this.createDatabase(this.params.get('rethink db name'))
         .then(() => {
           this.log.info(`Found or created databse ${this.params.get('rethink db name')}`);
-          return this.createTable('packages');
+          return this.createTable('packages', 'name');
         })
         .then(() => {
           this.log.info('Found or created packages table');
@@ -73,6 +75,32 @@ class RethinkStorage extends Module {
           process.exit(1);
         });
       }
+    });
+  }
+
+  getPackage(id) {
+    return new Promise((resolve, reject) => {
+      this.r.table('packages').get(id).run(this.conn, (err, result) => {
+        if (err) {
+          reject(err);
+        } else if (!result) {
+          reject(new this.ApplicationError.NotFound(`Package with id ${id} does not exist in nomjs-registry`));
+        } else {
+          resolve(result);
+        }
+      });
+    });
+  }
+
+  createPackage(packageInfo) {
+    return new Promise((resolve, reject) => {
+      this.r.table('packages').insert(packageInfo).run(this.conn, (err, result) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result);
+        }
+      });
     });
   }
 }
