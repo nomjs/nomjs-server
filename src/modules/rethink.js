@@ -103,6 +103,18 @@ class RethinkStorage extends Module {
       });
     });
   }
+
+  updatePackage(packageInfo) {
+    return new Promise((resolve, reject) => {
+      this.r.table('packages').get(packageInfo.name).update(packageInfo).run(this.conn, (err, result) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result);
+        }
+      });
+    });
+  }
 }
 
 module.exports = RethinkStorage;

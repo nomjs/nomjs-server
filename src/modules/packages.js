@@ -6,13 +6,19 @@ const Module = Ravel.Module;
 
 class UnscopedPackageError extends Ravel.Error {
   constructor(msg) {
-    super(msg, constructor, 308);
+    super(msg, constructor, Ravel.httpCodes.PERMANENT_REDIRECT);
   }
 }
 
 class UnsubmittedPackageError extends Ravel.Error {
   constructor(msg) {
-    super(msg, constructor, 307);
+    super(msg, constructor, Ravel.httpCodes.TEMPORARY_REDIRECT);
+  }
+}
+
+class ExistingVersionError extends Ravel.Error {
+  constructor(msg) {
+    super(msg, constructor, Ravel.httpCodes.CONFLICT);
   }
 }
 
@@ -78,14 +84,17 @@ class Packages extends Module {
     }
   }
 
-  getLatestPackageInfo(npmPackageInfo) {
+  getLatestPackageVersion(npmPackageInfo) {
     try {
       const semver = npmPackageInfo['dist-tags'].latest;
       if (semver === null) { throw new Error();}
-      return npmPackageInfo.versions[semver];
     } catch (err) {
       throw new Error('no version with tag \'latest\'');
     }
+  }
+
+  getLatestPackageInfo(npmPackageInfo) {
+    return npmPackageInfo.versions[this.getLatestPackageVersion(npmPackageInfo)];
   }
 
   /**
@@ -101,10 +110,9 @@ class Packages extends Module {
    * @return {Promise} resolves when package publish is creation, rejects with any errors
    */
   createPackage(publisher, args) {
-    console.dir(publisher);
     try {
-      const pInfo = Object.create(null);
       const currentTime = new Date();
+      const pInfo = Object.create(null);
       const latest = this.getLatestPackageInfo(args);
       // copy over things we need
       pInfo.name = args.name;
@@ -132,9 +140,77 @@ class Packages extends Module {
       if (latest.license) { pInfo.license = latest.license; }
       if (latest.keywords) { pInfo.keywords = latest.keywords; }
       pInfo.users = {}; // TODO what is this?
+      // TODO store blob
       // TODO reject attachment if size is too big, but check all of them - not just the first one
       return this.rethink.createPackage(pInfo);
     } catch (err) {
+      this.log.error(err.stack);
+      return Promise.reject(err);
+    }
+  }
+
+  /**
+   * Updates an existing package and publishes tarball to blob store
+   * @param {Object} publisher a github user profile representing the "publisher"
+   * @param {Object} existing current package info in database
+   * @param {Object} newInfo a package object direct from the npm client, containing:
+   *   @param {String} name
+   *   @param {String} description
+   *   @param {Object} dist-tags
+   *   @param {Object} versions
+   *   @param {String} readme
+   *   @param {Object} _attachments
+   * @return {Promise} resolves when package publish is creation, rejects with any errors
+   */
+  updatePackage(publisher, existing, newInfo) {
+    try {
+      const currentTime = new Date();
+      const oldVersion = this.getLatestPackageVersion(existing);
+      const newVersion = this.getLatestPackageVersion(newInfo);
+      console.log(oldVersion, newVersion);
+
+      if (newVersion === oldVersion) {
+        throw new ExistingVersionError(`You cannot publish over the previously published version ${oldVersion}`);
+      }
+
+      const latest = this.getLatestPackageInfo(newInfo);
+
+      if (newInfo.description) { existing.description = newInfo.description; }
+      existing['dist-tags'].latest = newInfo['dist-tags'].latest; // overwrite latest tag
+      existing.versions[newVersion] = latest; // add package info to 'versions' hash
+      // overwrite package metadata with latest info
+      if (newInfo.readme) { existing.readme = newInfo.readme; }
+      // update maintainer info (push new, update existing)
+      const existingMaintainers = existing.maintainers.filter(m =>  m.id === publisher.id);
+      if (existingMaintainers.length === 0) {
+        existing.maintainers.push({
+          id: publisher.id,
+          name: publisher.login,
+          email: publisher.email,
+          profile: publisher.html_url
+        });
+      } else {
+        existingMaintainers.forEach(e => {
+          e.name = publisher.login;
+          e.email = publisher.email;
+          e.profile = publisher.html_url;
+        });
+      }
+      existing.time.modified = currentTime.toISOString();
+      existing.time[latest.version] = currentTime.toISOString();
+      if (latest.contributors) { existing.contributors = latest.contributors; }
+      if (latest.author) { existing.author = latest.author; }
+      if (latest.readmeFilename) { existing.readmeFilename = latest.readmeFilename; }
+      if (latest.homepage) { existing.homepage = latest.homepage; }
+      if (latest.repository) { existing.repository = latest.repository; }
+      if (latest.bugs) { existing.bugs = latest.bugs; }
+      if (latest.license) { existing.license = latest.license; }
+      if (latest.keywords) { existing.keywords = latest.keywords; }
+      // TODO store blob
+      // TODO reject attachment if size is too big, but check all of them - not just the first one
+      return this.rethink.updatePackage(existing);
+    } catch(err) {
+      this.log.error(err.stack);
       return Promise.reject(err);
     }
   }
@@ -153,9 +229,9 @@ class Packages extends Module {
    */
   publish(publisher,  args) {
     return this.rethink.getPackage(args.name)
-      .then(() => {
-        // TODO implement package document updating
-        console.log('TODO implement package document updating');
+      .then((existing) => {
+        // update existing package
+        return this.updatePackage(publisher, existing, args);
       })
       .catch((err) => {
         if (err instanceof this.ApplicationError.NotFound) {
