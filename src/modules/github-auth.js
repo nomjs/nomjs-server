@@ -104,6 +104,46 @@ class GitHubAuth extends Module {
   }
 
   /**
+   * @param {String} token the OAuth token
+   * @param {String} scope the package scopee
+   * @param {String} repoName the package repository name
+   * @return {Promise} resolves if the user represented by token can administer the repository matching scope/repoName,
+   *                   rejects otherwise
+   */
+  canAdministerRepository(token, scope, repoName) {
+    return new Promise((resolve, reject) => {
+      this.tokenAuth(token);
+      this.github.repos.get({user: scope, repo: repoName}, (err, result) => {
+        if (err || !result || !result.permissions.admin) { // { admin: true, push: true, pull: true }
+          reject(err);
+        } else {
+          resolve();
+        }
+      });
+    });
+  }
+
+  /**
+   * @param {String} token the OAuth token
+   * @param {String} scope the package scopee
+   * @param {String} repoName the package repository name
+   * @return {Promise} resolves if the user represented by token can push to the repository matching scope/repoName,
+   *                   rejects otherwise
+   */
+  canPushToRepository(token, scope, repoName) {
+    return new Promise((resolve, reject) => {
+      this.tokenAuth(token);
+      this.github.repos.get({user: scope, repo: repoName}, (err, result) => {
+        if (err || !result || !result.permissions.push) { // { admin: true, push: true, pull: true }
+          reject(err);
+        } else {
+          resolve();
+        }
+      });
+    });
+  }
+
+  /**
    * Middleware for populating koa context with user profile
    * based on an auth token.
    */

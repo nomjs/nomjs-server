@@ -64,6 +64,7 @@ class PackageResource extends Resource {
     }
 
     // actually publish package
+    // TODO check if user can admin repository
     return promise.then(() => {
       return this.packages.publish(ctx.user, ctx.request.fields);
     }).then(() => {
