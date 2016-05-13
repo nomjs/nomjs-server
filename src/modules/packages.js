@@ -22,6 +22,18 @@ class ExistingVersionError extends Ravel.Error {
   }
 }
 
+class MissingAttachmentError extends Ravel.Error {
+  constructor(msg) {
+    super(msg, constructor, Ravel.httpCodes.BAD_REQUEST);
+  }
+}
+
+class MaxPackageSizeError extends Ravel.Error {
+  constructor(msg) {
+    super(msg, constructor, Ravel.httpCodes.REQUEST_ENTITY_TOO_LARGE);
+  }
+}
+
 /**
  * Logic for listing, retrieving, publishing packages
  */
@@ -84,10 +96,23 @@ class Packages extends Module {
     }
   }
 
+  shasum(id, version) {
+    return this.info(id).then((info) => {
+      return new Promise((resolve, reject) => {
+        try {
+          resolve(info.versions[version].dist.shasum);
+        } catch (err) {
+          reject(new Error(`shasum not found for package ${id} at version ${version}`));
+        }
+      });
+    });
+  }
+
   getLatestPackageVersion(npmPackageInfo) {
     try {
       const semver = npmPackageInfo['dist-tags'].latest;
       if (semver === null) { throw new Error();}
+      return semver;
     } catch (err) {
       throw new Error('no version with tag \'latest\'');
     }
@@ -95,6 +120,25 @@ class Packages extends Module {
 
   getLatestPackageInfo(npmPackageInfo) {
     return npmPackageInfo.versions[this.getLatestPackageVersion(npmPackageInfo)];
+  }
+
+  getTarballFromRequest(name, version, npmPackageInfo) {
+    if (npmPackageInfo._attachments === undefined || npmPackageInfo._attachments[`${name}-${version}.tgz`] === undefined) {
+      throw new MissingAttachmentError(`Tarball for package ${name} at version ${version} not found.`);
+    } else {
+      const attachment = npmPackageInfo._attachments[`${name}-${version}.tgz`];
+      const buff = Buffer.from(attachment.data, 'base64');
+      const maxSize = this.params.get('max package size bytes');
+      if (buff.length > maxSize) {
+        throw new MaxPackageSizeError(
+          `Tarball for package ${name} at version ${version} exceeds maximum package size of ${maxSize} bytes`);
+      }
+      return buff;
+    }
+  }
+
+  getTarballFromDB(key) {
+    return this.rethink.getTarball(key);
   }
 
   /**
@@ -140,9 +184,11 @@ class Packages extends Module {
       if (latest.license) { pInfo.license = latest.license; }
       if (latest.keywords) { pInfo.keywords = latest.keywords; }
       pInfo.users = {}; // TODO what is this?
-      // TODO store blob
-      // TODO reject attachment if size is too big, but check all of them - not just the first one
-      return this.rethink.createPackage(pInfo);
+      // store blob and package info
+      const buffer = this.getTarballFromRequest(pInfo.name, latest.version, args);
+      return this.rethink.createTarball(`${pInfo.name}-${latest.version}.tgz`, buffer).then(() => {
+        return this.rethink.createPackage(pInfo);
+      });
     } catch (err) {
       this.log.error(err.stack);
       return Promise.reject(err);
@@ -197,7 +243,7 @@ class Packages extends Module {
         });
       }
       existing.time.modified = currentTime.toISOString();
-      existing.time[latest.version] = currentTime.toISOString();
+      existing.time[newVersion] = currentTime.toISOString();
       if (latest.contributors) { existing.contributors = latest.contributors; }
       if (latest.author) { existing.author = latest.author; }
       if (latest.readmeFilename) { existing.readmeFilename = latest.readmeFilename; }
@@ -206,9 +252,11 @@ class Packages extends Module {
       if (latest.bugs) { existing.bugs = latest.bugs; }
       if (latest.license) { existing.license = latest.license; }
       if (latest.keywords) { existing.keywords = latest.keywords; }
-      // TODO store blob
-      // TODO reject attachment if size is too big, but check all of them - not just the first one
-      return this.rethink.updatePackage(existing);
+      // store blob and package info
+      const buffer = this.getTarballFromRequest(existing.name, newVersion, newInfo);
+      return this.rethink.createTarball(`${existing.name}-${newVersion}.tgz`, buffer).then(() => {
+        return this.rethink.updatePackage(newInfo);
+      });
     } catch(err) {
       this.log.error(err.stack);
       return Promise.reject(err);

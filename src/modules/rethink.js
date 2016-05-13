@@ -69,6 +69,10 @@ class RethinkStorage extends Module {
         })
         .then(() => {
           this.log.info('Found or created packages table');
+          return this.createTable('tarballs', 'name');
+        })
+        .then(() => {
+          this.log.info('Found or created tarballs table');
         })
         .catch((e) => {
           this.log.error(e.stack);
@@ -109,6 +113,33 @@ class RethinkStorage extends Module {
       this.r.table('packages').get(packageInfo.name).update(packageInfo).run(this.conn, (err, result) => {
         if (err) {
           reject(err);
+        } else {
+          resolve(result);
+        }
+      });
+    });
+  }
+
+  createTarball(name, buffer) {
+    return new Promise((resolve, reject) => {
+      this.r.table('tarballs').insert({ name: name, buffer: buffer }).run(this.conn, (err, result) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result);
+        }
+      });
+    });
+  }
+
+  getTarball(key) {
+    return new Promise((resolve, reject) => {
+      this.r.table('tarballs').get(key).run(this.conn, (err, result) => {
+        if (err) {
+          reject(err);
+        } else if (!result) {
+          reject(new this.ApplicationError.NotFound(
+            `Tarball with id ${key} does not exist in nomjs-registry`));
         } else {
           resolve(result);
         }
