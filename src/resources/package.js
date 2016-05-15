@@ -71,7 +71,7 @@ class PackageResource extends Resource {
       return this.packages.publish(ctx.user, ctx.request.fields);
     }).then(() => {
       ctx.status = 201;
-      ctx.body = {status: 'ok'};
+      ctx.body = {ok: true};
     });
   }
 }
