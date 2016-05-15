@@ -55,17 +55,19 @@ class PackageResource extends Resource {
   @before('githubProfile', 'bodyParser')
   put(ctx) {
     this.log.info(`user ${ctx.user.login} publishing ${ctx.params.id}`);
-    const org = this.packages.getScope(ctx.params.id);
+    const packageName = this.packages.getPackageName(ctx.params.id);
 
     let promise = Promise.resolve();
     // if scope is an org, make sure user is in org, otherwise publish under user scope
-    if (org !== ctx.user.login) {
-      promise = this.github.userInOrg(ctx.token, org);
+    if (packageName.scope !== ctx.user.login) {
+      promise = this.github.userInOrg(ctx.token, packageName.scope);
     }
 
-    // actually publish package
-    // TODO check if user can admin repository
     return promise.then(() => {
+      // check if user can admin corresponding repository
+      return this.github.canAdministerRepository(ctx.token, packageName.scope, packageName.name);
+    }).then(() => {
+      // actually publish package
       return this.packages.publish(ctx.user, ctx.request.fields);
     }).then(() => {
       ctx.status = 201;

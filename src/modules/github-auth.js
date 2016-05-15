@@ -10,6 +10,12 @@ class UserOrgError extends Ravel.Error {
   }
 }
 
+class NonexistentRepoError extends Ravel.Error {
+  constructor(org, name) {
+    super(`GitHub repository ${org}/${name} does not exist.`, constructor, Ravel.httpCodes.NOT_FOUND);
+  }
+}
+
 @inject('github')
 class GitHubAuth extends Module {
   constructor(GitHubApi) {
@@ -115,7 +121,11 @@ class GitHubAuth extends Module {
       this.tokenAuth(token);
       this.github.repos.get({user: scope, repo: repoName}, (err, result) => {
         if (err || !result || !result.permissions.admin) { // { admin: true, push: true, pull: true }
-          reject(err);
+          if (err.code === 404) {
+            reject(new NonexistentRepoError(scope,repoName));
+          } else {
+            reject(err);
+          }
         } else {
           resolve();
         }
@@ -135,7 +145,11 @@ class GitHubAuth extends Module {
       this.tokenAuth(token);
       this.github.repos.get({user: scope, repo: repoName}, (err, result) => {
         if (err || !result || !result.permissions.push) { // { admin: true, push: true, pull: true }
-          reject(err);
+          if (err.code === 404) {
+            reject(new NonexistentRepoError(scope,repoName));
+          } else {
+            reject(err);
+          }
         } else {
           resolve();
         }
