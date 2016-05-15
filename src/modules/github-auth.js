@@ -10,6 +10,12 @@ class UserOrgError extends Ravel.Error {
   }
 }
 
+class NonexistentRepoError extends Ravel.Error {
+  constructor(org, name) {
+    super(`GitHub repository ${org}/${name} does not exist.`, constructor, Ravel.httpCodes.NOT_FOUND);
+  }
+}
+
 @inject('github')
 class GitHubAuth extends Module {
   constructor(GitHubApi) {
@@ -99,6 +105,54 @@ class GitHubAuth extends Module {
       this.tokenAuth(token);
       this.github.user.get({}, (err, result) => {
         if (err) {reject(err);} else {resolve(result);}
+      });
+    });
+  }
+
+  /**
+   * @param {String} token the OAuth token
+   * @param {String} scope the package scopee
+   * @param {String} repoName the package repository name
+   * @return {Promise} resolves if the user represented by token can administer the repository matching scope/repoName,
+   *                   rejects otherwise
+   */
+  canAdministerRepository(token, scope, repoName) {
+    return new Promise((resolve, reject) => {
+      this.tokenAuth(token);
+      this.github.repos.get({user: scope, repo: repoName}, (err, result) => {
+        if (err || !result || !result.permissions.admin) { // { admin: true, push: true, pull: true }
+          if (err.code === 404) {
+            reject(new NonexistentRepoError(scope,repoName));
+          } else {
+            reject(err);
+          }
+        } else {
+          resolve();
+        }
+      });
+    });
+  }
+
+  /**
+   * @param {String} token the OAuth token
+   * @param {String} scope the package scopee
+   * @param {String} repoName the package repository name
+   * @return {Promise} resolves if the user represented by token can push to the repository matching scope/repoName,
+   *                   rejects otherwise
+   */
+  canPushToRepository(token, scope, repoName) {
+    return new Promise((resolve, reject) => {
+      this.tokenAuth(token);
+      this.github.repos.get({user: scope, repo: repoName}, (err, result) => {
+        if (err || !result || !result.permissions.push) { // { admin: true, push: true, pull: true }
+          if (err.code === 404) {
+            reject(new NonexistentRepoError(scope,repoName));
+          } else {
+            reject(err);
+          }
+        } else {
+          resolve();
+        }
       });
     });
   }

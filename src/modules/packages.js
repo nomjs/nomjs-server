@@ -51,11 +51,18 @@ class Packages extends Module {
   }
 
   getScope(id) {
+    this.getPackageName(id).scope;
+  }
+
+  getPackageName(id) {
     const scope = id.match(/^@([\w\-]+)\/([\w\-]+)$/);
     if (scope === null) {
       throw new UnscopedPackageError(`Package id ${id} is not a scoped package`);
     }
-    return scope[1];
+    return {
+      scope: scope[1],
+      name: scope[2]
+    };
   }
 
   _retrieveInfo(id) { //eslint-disable-line no-unused-vars
@@ -289,7 +296,6 @@ class Packages extends Module {
           return Promise.reject(err);
         }
       });
-    // TODO reject attachment if size is too big, but check all of them - not just the first one
   }
 }
 
