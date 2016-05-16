@@ -5,7 +5,8 @@ const Resource = Ravel.Resource;
 const inject = Ravel.inject;
 
 /**
- * Endpoints for npm star, npm stars, npm unstar
+ * Endpoint for npm stars.
+ * npm star and unstar are handled by the Packages resource (unfortunately)
  */
 @inject('stars')
 class Stars extends Resource {

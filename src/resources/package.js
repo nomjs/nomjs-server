@@ -6,14 +6,15 @@ const inject = Ravel.inject;
 const before = Resource.before;
 
 /**
- * package info, publishing, etc.
+ * package info, publishing, starring, unstarring etc.
  */
-@inject('koa-better-body', 'packages', 'github-auth')
+@inject('koa-better-body', 'packages', 'stars', 'github-auth')
 class PackageResource extends Resource {
-  constructor(bodyParser, packages, github) {
+  constructor(bodyParser, packages, stars, github) {
     super('/');
     this.bodyParser = bodyParser();
     this.packages = packages;
+    this.stars = stars;
     this.github = github;
     this.githubProfile = github.profileMiddleware();
   }
@@ -51,28 +52,39 @@ class PackageResource extends Resource {
 
   /**
    * Publish a package (either a new package, or a new version of an existing package)
+   * also unfortunately used for starring packages :( Stupid npm...
    */
   @before('githubProfile', 'bodyParser')
   put(ctx) {
-    this.log.info(`user ${ctx.user.login} publishing ${ctx.params.id}`);
-    const packageName = this.packages.getPackageName(ctx.params.id);
+    if (Object.keys(ctx.request.fields).length === 1 && ctx.request.fields.users) {
+      if (Object.keys(ctx.request.fields.users).length > 0) {
+        this.log.info(`user ${ctx.user.login} starring ${ctx.params.id}`);
+        return this.stars.star(ctx.user.id, ctx.params.id);
+      } else {
+        this.log.info(`user ${ctx.user.login} unstarring ${ctx.params.id}`);
+        return this.stars.unstar(ctx.user.id, ctx.params.id);
+      }
+    } else {
+      this.log.info(`user ${ctx.user.login} publishing ${ctx.params.id}`);
+      const packageName = this.packages.getPackageName(ctx.params.id);
 
-    let promise = Promise.resolve();
-    // if scope is an org, make sure user is in org, otherwise publish under user scope
-    if (packageName.scope !== ctx.user.login) {
-      promise = this.github.userInOrg(ctx.token, packageName.scope);
+      let promise = Promise.resolve();
+      // if scope is an org, make sure user is in org, otherwise publish under user scope
+      if (packageName.scope !== ctx.user.login) {
+        promise = this.github.userInOrg(ctx.token, packageName.scope);
+      }
+
+      return promise.then(() => {
+        // check if user can admin corresponding repository
+        return this.github.canAdministerRepository(ctx.token, packageName.scope, packageName.name);
+      }).then(() => {
+        // actually publish package
+        return this.packages.publish(ctx.user, ctx.request.fields);
+      }).then(() => {
+        ctx.status = 201;
+        ctx.body = {ok: true};
+      });
     }
-
-    return promise.then(() => {
-      // check if user can admin corresponding repository
-      return this.github.canAdministerRepository(ctx.token, packageName.scope, packageName.name);
-    }).then(() => {
-      // actually publish package
-      return this.packages.publish(ctx.user, ctx.request.fields);
-    }).then(() => {
-      ctx.status = 201;
-      ctx.body = {ok: true};
-    });
   }
 }
 

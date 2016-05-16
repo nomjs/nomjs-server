@@ -20,13 +20,13 @@ class Stars extends Module {
     return this.rethink.getStars(userId);
   }
 
-  // star(token, packageId) {
-  //
-  // }
-  //
-  // unstar(token, packageId) {
-  //
-  // }
+  star(userId, packageId) {
+    return this.rethink.star(userId, packageId);
+  }
+
+  unstar(userId, packageId) {
+    return this.rethink.unstar(userId, packageId);
+  }
 }
 
 module.exports = Stars;
