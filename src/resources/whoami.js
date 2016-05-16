@@ -18,7 +18,7 @@ class WhoAmIResource extends Resource {
   @before('githubProfile')
   getAll(ctx) {
     ctx.status = 200;
-    ctx.response.body = {username: ctx.user.login};
+    ctx.response.body = {username: ctx.user.id};
   }
 }
 

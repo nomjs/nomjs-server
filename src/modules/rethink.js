@@ -73,12 +73,56 @@ class RethinkStorage extends Module {
         })
         .then(() => {
           this.log.info('Found or created tarballs table');
+          return this.createTable('users', 'id');
+        })
+        .then(() => {
+          this.log.info('Found or created users table');
         })
         .catch((e) => {
           this.log.error(e.stack);
           process.exit(1);
         });
       }
+    });
+  }
+
+  getUser(id) {
+    return new Promise((resolve, reject) => {
+      this.r.table('users').get(id).run(this.conn, (err, result) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result);
+        }
+      });
+    });
+  }
+
+  findOrCreateUser(profile, email) {
+    const user = {
+      id: profile.id,
+      email: email
+    };
+    return new Promise((resolve, reject) => {
+      this.r.table('users').insert(user, {conflict: 'update'}).run(this.conn, (err) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(user);
+        }
+      });
+    });
+  }
+
+  removeUser(id) {
+    return new Promise((resolve, reject) => {
+      this.r.table('users').get(id).delete().run(this.conn, (err) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve();
+        }
+      });
     });
   }
 
@@ -142,6 +186,19 @@ class RethinkStorage extends Module {
             `Tarball with id ${key} does not exist in nomjs-registry`));
         } else {
           resolve(result);
+        }
+      });
+    });
+  }
+
+  getStars(userId) {
+    return new Promise((resolve, reject) => {
+      this.r.table('users').get(userId).run(this.conn, (err, result) =>  {
+        if (err) {
+          reject(new this.ApplicationError.NotFound(
+            `User with id ${userId} does not exist in nomjs-registry`));
+        } else {
+          resolve(result.stars);
         }
       });
     });
