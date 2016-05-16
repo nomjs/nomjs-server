@@ -190,7 +190,6 @@ class Packages extends Module {
       if (latest.bugs) { pInfo.bugs = latest.bugs; }
       if (latest.license) { pInfo.license = latest.license; }
       if (latest.keywords) { pInfo.keywords = latest.keywords; }
-      pInfo.users = {}; // TODO what is this?
       // store blob and package info
       const buffer = this.getTarballFromRequest(pInfo.name, latest.version, args);
       return this.rethink.createTarball(`${pInfo.name}-${latest.version}.tgz`, buffer).then(() => {
