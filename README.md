@@ -29,7 +29,7 @@
 
 Start app:
 ```bash
-$ docker-compose up
+$ GITHUB_OAUTH_CLIENT_ID=nomSearchWebclientId GITHUB_OAUTH_CLIENT_SECRET=nomSearchWebclientSecret docker-compose up
 ```
 
 ### Log in to nom

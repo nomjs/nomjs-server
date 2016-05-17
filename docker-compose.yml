@@ -19,6 +19,8 @@ services:
     build: .
     environment:
       NODE_ENV: development
+      GITHUB_OAUTH_CLIENT_ID: ${GITHUB_OAUTH_CLIENT_ID}
+      GITHUB_OAUTH_CLIENT_SECRET: ${GITHUB_OAUTH_CLIENT_SECRET}
     ports:
       - 9080:9080
     volumes:
