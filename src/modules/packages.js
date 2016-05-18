@@ -22,6 +22,12 @@ class ExistingVersionError extends Ravel.Error {
   }
 }
 
+class PrivatePackageError extends Ravel.Error {
+  constructor() {
+    super('nomjs-registry does not accept private packages', constructor, Ravel.httpCodes.BAD_REQUEST);
+  }
+}
+
 class MissingAttachmentError extends Ravel.Error {
   constructor(msg) {
     super(msg, constructor, Ravel.httpCodes.BAD_REQUEST);
@@ -98,7 +104,7 @@ class Packages extends Module {
       return this._retrieveInfo(id);
     } else {
       return Promise.reject(new UnscopedPackageError({
-        error: 'nom does not permit unscoped packages'
+        error: 'nom does not accept unscoped packages'
       }));
     }
   }
@@ -164,6 +170,9 @@ class Packages extends Module {
     try {
       const currentTime = new Date();
       const pInfo = Object.create(null);
+      // reject private packages
+      if (args.private) { throw new PrivatePackageError(); }
+      // get latest info from the versions hash
       const latest = this.getLatestPackageInfo(args);
       // copy over things we need
       pInfo.name = args.name;
@@ -217,9 +226,10 @@ class Packages extends Module {
   updatePackage(publisher, existing, newInfo) {
     try {
       const currentTime = new Date();
+      // reject private packages
+      if (newInfo.private) { throw new PrivatePackageError(); }
       const oldVersion = this.getLatestPackageVersion(existing);
       const newVersion = this.getLatestPackageVersion(newInfo);
-      console.log(oldVersion, newVersion);
 
       if (newVersion === oldVersion) {
         throw new ExistingVersionError(`You cannot publish over the previously published version ${oldVersion}`);
