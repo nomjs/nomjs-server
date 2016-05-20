@@ -32,6 +32,7 @@ class GitHubAuth extends Module {
         'user-agent': 'nomjs-registry' // GitHub is happy with a unique user agent
       }
     });
+    this.bearerRegex = /^(?:Bearer|token) (\w+)$/;
   }
 
   /**
@@ -163,9 +164,8 @@ class GitHubAuth extends Module {
    */
   profileMiddleware() {
     const self = this;
-    const bearerRegex = /^Bearer (\w+)$/;
     return function*(next) {
-      const token = this.headers.authorization.match(bearerRegex);
+      const token = this.headers.authorization.match(this.bearerRegex);
       if (token) {
         this.token = token[1];
         yield self.getProfile(token[1]).then((profile) => {
