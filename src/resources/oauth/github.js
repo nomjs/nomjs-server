@@ -12,12 +12,12 @@ class GithubResource extends Resource {
   }
 
   getAll(ctx) {
+    // TODO should also include "state"
     let sessionCode = ctx.query.code;
     let clientId = this.params.get('github oauth client id');
     let clientSecret = this.params.get('github oauth client secret');
 
-    // temp wip, just return response for now to see how this is working
-    // response is like:
+    // sample response:
     /**
      *
      {
@@ -26,18 +26,15 @@ class GithubResource extends Resource {
         scope: "user:email"
       }
      */
-    // TODO save response.access_token in db, user table?
     return this.oauthGithub.login(sessionCode, clientId, clientSecret)
       .then((response) => {
-        ctx.status = 200;
-        ctx.body = {
-          message: 'success',
-          'token_type': response.token_type,
-          scope: response.scope
-        };
+        this.log.debug(`Received user access token with scope: ${response.scope}`);
+        // TODO: Store response.access_token in session
+        // TODO: Search web client url should be env var
+        ctx.redirect(`http://localhost:9000`);
       })
-      .catch((err) => {
-        return Promise.reject(err);
+      .catch(() => {
+        ctx.redirect(`http://localhost:9000/#/loginfail`);
       });
   }
 }
