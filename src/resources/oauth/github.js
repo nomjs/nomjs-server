@@ -2,22 +2,43 @@
 
 const Ravel = require('ravel');
 const Resource = Ravel.Resource;
+const inject = Ravel.inject;
 
+@inject('oauth-github')
 class GithubResource extends Resource {
-  constructor() {
+  constructor(oauthGithub) {
     super('/oauth/github');
+    this.oauthGithub = oauthGithub;
   }
 
   getAll(ctx) {
-    console.log('=== HANDLING GITHUB OAUTH ===');
-    console.log(ctx.query);
-    var promise = new Promise((resolve) => {
-      resolve({test: 'it worked'});
-    });
-    return promise.then(data => {
-      ctx.status = 200;
-      ctx.body = data;
-    });
+    let sessionCode = ctx.query.code;
+    let clientId = this.params.get('github oauth client id');
+    let clientSecret = this.params.get('github oauth client secret');
+
+    // temp wip, just return response for now to see how this is working
+    // response is like:
+    /**
+     *
+     {
+        access_token: "someAlphanumeric",
+        token_type: "bearer",
+        scope: "user:email"
+      }
+     */
+    // TODO save response.access_token in db, user table?
+    return this.oauthGithub.login(sessionCode, clientId, clientSecret)
+      .then((response) => {
+        ctx.status = 200;
+        ctx.body = {
+          message: 'success',
+          'token_type': response.token_type,
+          scope: response.scope
+        };
+      })
+      .catch((err) => {
+        return Promise.reject(err);
+      });
   }
 }
 
