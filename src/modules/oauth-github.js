@@ -18,7 +18,7 @@ class OauthGithub extends Module {
     this.requestPromise = requestPromise;
   }
 
-  login(sessionCode, clientId, clientSecret) {
+  login(sessionCode, state, clientId, clientSecret) {
     let options = {
       method: 'POST',
       uri: 'https://github.com/login/oauth/access_token',
@@ -26,7 +26,8 @@ class OauthGithub extends Module {
       body: {
         'client_id': clientId,
         'client_secret': clientSecret,
-        'code': sessionCode
+        'code': sessionCode,
+        'state': state
       }
     };
     return new Promise((resolve, reject) => {

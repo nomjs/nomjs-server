@@ -12,8 +12,8 @@ class GithubResource extends Resource {
   }
 
   getAll(ctx) {
-    // TODO should also include "state"
     let sessionCode = ctx.query.code;
+    let state = ctx.query.state;
     let clientId = this.params.get('github oauth client id');
     let clientSecret = this.params.get('github oauth client secret');
 
@@ -26,7 +26,7 @@ class GithubResource extends Resource {
         scope: "user:email"
       }
      */
-    return this.oauthGithub.login(sessionCode, clientId, clientSecret)
+    return this.oauthGithub.login(sessionCode, state, clientId, clientSecret)
       .then((response) => {
         this.log.debug(`Received user access token with scope: ${response.scope}`);
         // TODO: Store response.access_token in session
