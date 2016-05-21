@@ -4,12 +4,11 @@ const Ravel = require('ravel');
 const Resource = Ravel.Resource;
 const inject = Ravel.inject;
 
-@inject('oauth-github', 'koa-better-body', 'jsonwebtoken')
+@inject('oauth-github', 'jsonwebtoken')
 class GithubResource extends Resource {
-  constructor(oauthGithub, bodyParser, jwt) {
+  constructor(oauthGithub, jwt) {
     super('/-/oauthgithub');
     this.oauthGithub = oauthGithub;
-    this.bodyParser = bodyParser;
     this.jwt = jwt;
   }
 
