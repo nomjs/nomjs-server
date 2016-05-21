@@ -31,6 +31,7 @@ class PackageResource extends Resource {
     // just redirect if the user asks to search npm directly
     if (ctx.query.proxynpm) {
       ctx.set('Location', `https://registry.npmjs.org/${this.packages.encode(ctx.params.id)}`);
+      ctx.status = 302;
     } else {
       return this.packages.info(ctx.params.id, ctx.query)
         .then((packageInfo) => {
