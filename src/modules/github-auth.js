@@ -6,13 +6,13 @@ const Module = Ravel.Module;
 
 class UserOrgError extends Ravel.Error {
   constructor(orgname) {
-    super(`User is not in org ${orgname}`, constructor, Ravel.httpCodes.FORBIDDEN);
+    super(`User is not in org ${orgname}`, Ravel.httpCodes.FORBIDDEN);
   }
 }
 
 class NonexistentRepoError extends Ravel.Error {
   constructor(org, name) {
-    super(`GitHub repository ${org}/${name} does not exist.`, constructor, Ravel.httpCodes.NOT_FOUND);
+    super(`GitHub repository ${org}/${name} does not exist.`, Ravel.httpCodes.NOT_FOUND);
   }
 }
 

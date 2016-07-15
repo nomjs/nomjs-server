@@ -15,14 +15,14 @@
   },
   "main":"dist/app.js",
   "scripts": {
-    "start": "cd dist && node --harmony-rest-parameters app.js",
+    "start": "cd dist && node app.js",
     "test":"gulp test",
-    "debug":"gulp build && cd dist && node --harmony-rest-parameters --debug-brk app.js"
+    "debug":"gulp build && cd dist && node --debug-brk app.js"
   },
   "dependencies": {
     "github": "0.2.4",
     "koa-better-body": "2.0.1",
-    "ravel": "0.14.1",
+    "ravel": "0.17.2",
     "rethinkdb": "2.3.1"
   },
   "devDependencies": {

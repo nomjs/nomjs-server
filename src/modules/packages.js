@@ -6,37 +6,37 @@ const Module = Ravel.Module;
 
 class UnscopedPackageError extends Ravel.Error {
   constructor(msg) {
-    super(msg, constructor, Ravel.httpCodes.PERMANENT_REDIRECT);
+    super(msg, Ravel.httpCodes.PERMANENT_REDIRECT);
   }
 }
 
 class UnsubmittedPackageError extends Ravel.Error {
   constructor(msg) {
-    super(msg, constructor, Ravel.httpCodes.TEMPORARY_REDIRECT);
+    super(msg, Ravel.httpCodes.TEMPORARY_REDIRECT);
   }
 }
 
 class ExistingVersionError extends Ravel.Error {
   constructor(msg) {
-    super(msg, constructor, Ravel.httpCodes.CONFLICT);
+    super(msg, Ravel.httpCodes.CONFLICT);
   }
 }
 
 class PrivatePackageError extends Ravel.Error {
   constructor() {
-    super('nomjs-registry does not accept private packages', constructor, Ravel.httpCodes.BAD_REQUEST);
+    super('nomjs-registry does not accept private packages', Ravel.httpCodes.BAD_REQUEST);
   }
 }
 
 class MissingAttachmentError extends Ravel.Error {
   constructor(msg) {
-    super(msg, constructor, Ravel.httpCodes.BAD_REQUEST);
+    super(msg, Ravel.httpCodes.BAD_REQUEST);
   }
 }
 
 class MaxPackageSizeError extends Ravel.Error {
   constructor(msg) {
-    super(msg, constructor, Ravel.httpCodes.REQUEST_ENTITY_TOO_LARGE);
+    super(msg, Ravel.httpCodes.REQUEST_ENTITY_TOO_LARGE);
   }
 }
 
