@@ -1,4 +1,4 @@
-FROM mhart/alpine-node:5
+FROM mhart/alpine-node:6.2.1
 
 RUN apk add --no-cache python build-base git && \
     npm install -g gulp && \

@@ -29,7 +29,7 @@
 
 Start app:
 ```bash
-$ docker-compose up
+$ PWD=`pwd` docker-compose up
 ```
 
 ### Log in to nom
