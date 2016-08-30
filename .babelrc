@@ -1,7 +1,0 @@
-{
-  "plugins": ["transform-decorators-legacy"],
-  "only": [
-    "src/**/*.js"
-  ],
-  "retainLines": true
-}

@@ -2,10 +2,10 @@
 
 const gulp = require('gulp');
 const sourcemaps = require('gulp-sourcemaps');
-const babel = require('gulp-babel');
 const spawn = require('child_process').spawn;
 const eslint = require('gulp-eslint');
 const del = require('del');
+const typescript = require('gulp-typescript');
 
 gulp.task('clean', function() {
   return del(['dist/**']);
@@ -21,7 +21,13 @@ gulp.task('lint', function() {
 gulp.task('build', ['clean'], function () {
   return gulp.src('src/**/*.js')
     .pipe(sourcemaps.init())
-    .pipe(babel())
+    .pipe(typescript({
+        typescript: require('typescript'),
+        allowJs: true,
+        experimentalDecorators: true,
+        // emitDecoratorMetadata: true,
+        target: 'ES6',
+      }))
     .on('error', function(e) {
       console.error(e.stack);
       this.emit('end');
