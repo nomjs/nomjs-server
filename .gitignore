@@ -4,3 +4,5 @@ npm-debug.log
 docs/*
 reports/*
 dist/*
+.idea
+coverage/

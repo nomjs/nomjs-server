@@ -5,10 +5,12 @@
     "builtin": true,
     "es6": true
   },
-  "globals": {},
+  "globals": {
+    "__dirname": false
+  },
   "rules": {
     "block-scoped-var": 2,
-    "camelcase": 2,
+    "camelcase": 1,
     "comma-style": [
       2,
       "last"
@@ -50,7 +52,7 @@
     "no-script-url": 2,
     "no-sequences": 2,
     "no-shadow": 2,
-    "no-undef": 2,
+    "no-undef": 1,
     "no-unused-vars": 0, /*uncomment when typescript linter supports decorators */
     "no-with": 2,
     "quotes": [

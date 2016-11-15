@@ -1,0 +1,21 @@
+{
+  "extends": "../.eslintrc.json",
+  "parser": "typescript-eslint-parser",
+  "globals": {
+    "describe":   false,
+    "before":     false,
+    "after":      false,
+    "beforeEach": false,
+    "afterEach":  false,
+    "it":         false,
+    "require":    false,
+    "module":     false
+  },
+  "env": {
+    "mocha": true
+  },
+  "rules":  {
+    "strict": 0,
+    "no-unused-vars": 0
+  }
+}

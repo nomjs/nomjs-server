@@ -1,44 +1,80 @@
 'use strict';
 
+//gulp
 const gulp = require('gulp');
-const sourcemaps = require('gulp-sourcemaps');
-const spawn = require('child_process').spawn;
-const eslint = require('gulp-eslint');
-const del = require('del');
-const typescript = require('gulp-typescript');
 
-gulp.task('clean', function() {
-  return del(['dist/**']);
-});
+// plugins
+const plugins = require( 'gulp-load-plugins' )();
+
+// utils
+const del = require('del');
+const spawn = require('child_process').spawn;
+
+const TESTS = ['test-dist/**/*.spec.js'];
 
 gulp.task('lint', function() {
   return gulp.src(['./src/**/*.js', './test/**/*.js', 'gulpfile.js'])
-             .pipe(eslint())
-             .pipe(eslint.format());
-            //  .pipe(eslint.failAfterError());
+    .pipe(plugins.eslint())
+    .pipe(plugins.eslint.format())
+    .pipe(plugins.eslint.failAfterError());
+});
+
+gulp.task('clean', function() {
+  return del([
+    'reports', 'dist', 'test-dist'
+  ]);
+});
+
+gulp.task('transpile', ['clean', 'lint'], function() {
+  return gulp.src('test/**/*.js')
+    .pipe(plugins.sourcemaps.init())
+    .pipe(plugins.typescript({
+      typescript: require('typescript'),
+      allowJs: true,
+      experimentalDecorators: true,
+      // emitDecoratorMetadata: true,
+      target: 'ES6',
+    }))
+    .pipe(plugins.sourcemaps.write('.'))
+    .pipe(gulp.dest('test-dist'));
+});
+
+gulp.task('test', ['transpile'], function () {
+  const env = plugins.env.set({
+    LOG_LEVEL : 'debug'
+  });
+  return gulp.src(TESTS)
+    .pipe(env)
+    .pipe(plugins.mocha({
+      reporter: 'spec',
+      quiet:false,
+      colors:true,
+      timeout: 10000
+    }))
+    .pipe(env.reset);
 });
 
 gulp.task('build', ['clean'], function () {
   return gulp.src('src/**/*.js')
-    .pipe(sourcemaps.init())
-    .pipe(typescript({
-        typescript: require('typescript'),
-        allowJs: true,
-        experimentalDecorators: true,
-        // emitDecoratorMetadata: true,
-        target: 'ES6',
-      }))
-    .on('error', function(e) {
+    .pipe(plugins.sourcemaps.init())
+    .pipe(plugins.typescript({
+      typescript: require('typescript'),
+      allowJs: true,
+      experimentalDecorators: true,
+      // emitDecoratorMetadata: true,
+      target: 'ES6',
+    }))
+    .on('error', function (e) {
       console.error(e.stack);
       this.emit('end');
     })
-    .pipe(sourcemaps.write('.'))
+    .pipe(plugins.sourcemaps.write('.'))
     .pipe(gulp.dest('dist'));
 });
 
 // BEGIN watch stuff
 let server;
-gulp.task('serve', ['build'], function() {
+gulp.task('serve', ['build'], function () {
   if (server) {
     server.kill();
   }
@@ -53,12 +89,14 @@ gulp.task('serve', ['build'], function() {
     }
   });
 });
+
 process.on('exit', () => {
   if (server) {
     server.kill();
   }
 });
-gulp.task('watch', ['lint', 'serve'], function() {
+
+gulp.task('watch', ['lint', 'serve'], function () {
   gulp.watch('src/**/*.js', {interval: 1000, mode: 'poll'}, ['lint', 'serve']);
   gulp.watch('.ravelrc', {interval: 1000, mode: 'poll'}, ['serve']);
 });

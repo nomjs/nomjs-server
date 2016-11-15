@@ -84,7 +84,7 @@ class GitHubAuth extends Module {
       this.github.authorization.create({
         scopes: ['read:org'],
         note: 'nomjs-registry',
-        note_url: 'https://github.com/nomjs/nomjs-registry.git', //eslint-disable-line camelcase
+        note_url: 'https://github.com/nomjs/nomjs-registry.git', // eslint-disable-line camelcase
         headers: headers
       }, (err, res) => {
         if (err) {
