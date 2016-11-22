@@ -14,7 +14,7 @@ const TESTS = ['test-dist/**/*.spec.js'];
 
 gulp.task('lint', function() {
   return gulp.src(['./src/**/*.js', './test/**/*.js', 'gulpfile.js'])
-    .pipe(plugins.eslint())
+    .pipe(plugins.eslint({configFile: '.eslintrc.json'}))
     .pipe(plugins.eslint.format())
     .pipe(plugins.eslint.failAfterError());
 });
@@ -53,14 +53,18 @@ gulp.task('transpile-test', ['clean', 'lint'], function() {
     .pipe(gulp.dest('test-dist'));
 });
 
-gulp.task('test', ['transpile-src', 'transpile-src'], function () {
+gulp.task('test', ['transpile-src', 'transpile-test'], function () {
   const env = plugins.env.set({
     LOG_LEVEL : 'debug'
   });
   return gulp.src(TESTS)
     .pipe(env)
     .pipe(plugins.mocha({
-      reporter: 'spec',
+      reporter: 'mocha-multi',
+      reporterOptions: {
+        dot: '-',
+        doc: 'test-dist/test-results.html'
+      },
       quiet:false,
       colors:true,
       timeout: 10000

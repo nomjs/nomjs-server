@@ -13,9 +13,5 @@
   },
   "env": {
     "mocha": true
-  },
-  "rules":  {
-    "strict": 0,
-    "no-unused-vars": 0
   }
 }

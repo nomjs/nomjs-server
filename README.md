@@ -67,3 +67,10 @@ $ npm --loglevel=verbose --registry http://0.0.0.0:9080 install @raveljs/ravel
 ```bash
 $ npm --loglevel=verbose  --registry http://0.0.0.0:9080 publish .
 ```
+
+### Testing Under Windows
+
+```cmd
+docker run -p 28015:28015 -p 9081:8080 -d rethinkdb:2.3
+docker run -p 6379:6379 -d  redis:3.2-alpine
+```
