@@ -8,7 +8,8 @@ describe('Test `npm install` commands', function() {
 
   before(function() {
     log.debug('Firing up nom...');
-    nom = require('../../src/app.js');
+    log.debug('Environment variables: ', process.env);
+    nom = require('../../dist/app.js');
     log.debug('Nom up and running.');
   });
 
@@ -20,6 +21,6 @@ describe('Test `npm install` commands', function() {
   });
 
   it('npm install leftpad', function() {
-    expect(true).toBe(true);
+    expect(true).to.be(true);
   });
 });

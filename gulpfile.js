@@ -25,7 +25,21 @@ gulp.task('clean', function() {
   ]);
 });
 
-gulp.task('transpile', ['clean', 'lint'], function() {
+gulp.task('transpile-src', ['clean', 'lint'], function() {
+  return gulp.src('src/**/*.js')
+    .pipe(plugins.sourcemaps.init())
+    .pipe(plugins.typescript({
+      typescript: require('typescript'),
+      allowJs: true,
+      experimentalDecorators: true,
+      // emitDecoratorMetadata: true,
+      target: 'ES6'
+    }))
+    .pipe(plugins.sourcemaps.write('.'))
+    .pipe(gulp.dest('dist'));
+});
+
+gulp.task('transpile-test', ['clean', 'lint'], function() {
   return gulp.src('test/**/*.js')
     .pipe(plugins.sourcemaps.init())
     .pipe(plugins.typescript({
@@ -33,13 +47,13 @@ gulp.task('transpile', ['clean', 'lint'], function() {
       allowJs: true,
       experimentalDecorators: true,
       // emitDecoratorMetadata: true,
-      target: 'ES6',
+      target: 'ES6'
     }))
     .pipe(plugins.sourcemaps.write('.'))
     .pipe(gulp.dest('test-dist'));
 });
 
-gulp.task('test', ['transpile'], function () {
+gulp.task('test', ['transpile-src', 'transpile-src'], function () {
   const env = plugins.env.set({
     LOG_LEVEL : 'debug'
   });
@@ -54,23 +68,7 @@ gulp.task('test', ['transpile'], function () {
     .pipe(env.reset);
 });
 
-gulp.task('build', ['clean'], function () {
-  return gulp.src('src/**/*.js')
-    .pipe(plugins.sourcemaps.init())
-    .pipe(plugins.typescript({
-      typescript: require('typescript'),
-      allowJs: true,
-      experimentalDecorators: true,
-      // emitDecoratorMetadata: true,
-      target: 'ES6',
-    }))
-    .on('error', function (e) {
-      console.error(e.stack);
-      this.emit('end');
-    })
-    .pipe(plugins.sourcemaps.write('.'))
-    .pipe(gulp.dest('dist'));
-});
+gulp.task('build', ['clean', 'transpile-src']);
 
 // BEGIN watch stuff
 let server;
