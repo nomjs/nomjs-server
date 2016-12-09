@@ -22,6 +22,14 @@ describe('Test `npm install` commands', function () {
 
   it('validate we can proxy a package', function (done) {
     console.log('Running \'npm install\'');
+    shell.exec(`npm --loglevel=verbose --registry http://127.0.0.1:9080 install leftpad`, function (code, stdout, stderr) {
+      expect(code).to.equal(0);
+      done();
+    });
+  });
+
+  it('validate we can install a package', function (done) {
+    console.log('Running \'npm install\'');
     shell.exec(`npm --loglevel=verbose --registry http://127.0.0.1:9080 install @raveljs/ravel`, function (code, stdout, stderr) {
       expect(code).to.equal(0);
       done();
