@@ -8,6 +8,7 @@ const plugins = require('gulp-load-plugins')();
 
 // utils
 const del = require('del');
+const path = require('path');
 const spawn = require('child_process').spawn;
 
 const TESTS = ['test-dist/**/*.spec.js'];
@@ -61,16 +62,8 @@ gulp.task('test', ['transpile-src', 'transpile-test'], function () {
   });
   return gulp.src(TESTS)
     .pipe(env)
-    .pipe(plugins.mocha({
-      reporter: 'mocha-multi',
-      reporterOptions: {
-        dot: '-',
-        doc: 'test-dist/test-results.html'
-      },
-      quiet: false,
-      colors: true,
-      timeout: 10000
-    }))
+    .pipe(plugins.exec(`${path.resolve(__dirname, './node_modules/.bin/mocha')} -R mocha-multi -O dot=-,doc=test-dist/test-results.html -c --harmony_async_await -t 10000 test-dist/**/*.spec.js`))
+    .pipe(plugins.exec.reporter())
     .pipe(env.reset);
 });
 
