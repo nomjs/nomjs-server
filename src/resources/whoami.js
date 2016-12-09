@@ -10,13 +10,13 @@ const before = Resource.before;
  */
 @inject('github-auth')
 class WhoAmIResource extends Resource {
-  constructor(github) {
+  constructor (github) {
     super('/-/whoami');
     this.githubProfile = github.profileMiddleware();
   }
 
   @before('githubProfile')
-  getAll(ctx) {
+  getAll (ctx) {
     ctx.status = 200;
     ctx.response.body = {username: ctx.user.id};
   }

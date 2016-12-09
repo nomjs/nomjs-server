@@ -7,7 +7,7 @@ const Resource = Ravel.Resource;
  * Endpoints for npm team.
  */
 class OrgTeams extends Resource {
-  constructor() {
+  constructor () {
     super('/-/org/:orgId/team');
   }
 }

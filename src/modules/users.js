@@ -6,14 +6,14 @@ const Module = Ravel.Module;
 
 @inject('rethink')
 class Users extends Module {
-  constructor(rethink) {
+  constructor (rethink) {
     super();
     this.rethink = rethink;
   }
-  findOrCreateUser(githubProfile, email) {
+  findOrCreateUser (githubProfile, email) {
     return this.rethink.findOrCreateUser(githubProfile, email);
   }
-  removeUser(id) {
+  removeUser (id) {
     return this.rethink.removeUser(id);
   }
 }

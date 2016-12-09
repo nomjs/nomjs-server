@@ -7,7 +7,7 @@ const Resource = Ravel.Resource;
  * Endpoints for npm access ls-collaborators.
  */
 class PackageCollaborators extends Resource {
-  constructor() {
+  constructor () {
     super('/-/package/:packageId/collaborators');
   }
 }
