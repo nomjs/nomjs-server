@@ -14,7 +14,7 @@ const TESTS = ['test-dist/**/*.spec.js'];
 const babelConfig = {
   'retainLines': true
 };
-if (process.execArgv.indexOf('--harmony_async_await') < 0) {
+if (!process.execArgv || process.execArgv.indexOf('--harmony_async_await') < 0) {
   console.log('Transpiling async/await...');
   babelConfig.plugins = ['transform-decorators-legacy', 'transform-async-to-generator'];
 } else {
