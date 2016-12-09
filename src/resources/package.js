@@ -1,5 +1,6 @@
 'use strict';
 
+const log = require('intel');
 const Ravel = require('ravel');
 const Resource = Ravel.Resource;
 const inject = Ravel.inject;
@@ -17,6 +18,8 @@ class PackageResource extends Resource {
     this.stars = stars;
     this.github = github;
     this.githubProfile = github.profileMiddleware();
+
+    log.basicConfig();
   }
 
   /**
@@ -31,6 +34,7 @@ class PackageResource extends Resource {
     // just redirect if the user asks to search npm directly
     if (ctx.query.proxynpm) {
       ctx.set('Location', `https://registry.npmjs.org/${this.packages.encode(ctx.params.id)}`);
+      ctx.status = 301;
     } else {
       return this.packages.info(ctx.params.id, ctx.query)
         .then((packageInfo) => {
@@ -38,10 +42,14 @@ class PackageResource extends Resource {
           ctx.body = packageInfo;
         })
         .catch((err) => {
+          log.error(`Error type: ${err.constructor.name}`);
           switch (err.constructor.name) {
             case 'UnscopedPackageError':
             case 'UnsubmittedPackageError':
+              log.error(`User requested an unscoped package, or one that we don't host: ${ctx.params.id}`);
               ctx.set('Location', `https://registry.npmjs.org/${this.packages.encode(ctx.params.id)}`);
+              ctx.status = 301;
+              ctx.body = {};
               break;
             default:
               // rethrow
@@ -59,14 +67,14 @@ class PackageResource extends Resource {
   put (ctx) {
     if (Object.keys(ctx.request.fields).length === 1 && ctx.request.fields.users) {
       if (Object.keys(ctx.request.fields.users).length > 0) {
-        this.log.info(`user ${ctx.user.login} starring ${ctx.params.id}`);
+        log.info(`user ${ctx.user.login} starring ${ctx.params.id}`);
         return this.stars.star(ctx.user.id, ctx.params.id);
       } else {
-        this.log.info(`user ${ctx.user.login} unstarring ${ctx.params.id}`);
+        log.info(`user ${ctx.user.login} unstarring ${ctx.params.id}`);
         return this.stars.unstar(ctx.user.id, ctx.params.id);
       }
     } else {
-      this.log.info(`user ${ctx.user.login} publishing ${ctx.params.id}`);
+      log.info(`user ${ctx.user.login} publishing ${ctx.params.id}`);
       const packageName = this.packages.getPackageName(ctx.params.id);
 
       let promise = Promise.resolve();
