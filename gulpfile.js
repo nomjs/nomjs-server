@@ -1,44 +1,50 @@
 'use strict';
 
+// gulp
 const gulp = require('gulp');
-const sourcemaps = require('gulp-sourcemaps');
-const spawn = require('child_process').spawn;
-const eslint = require('gulp-eslint');
-const del = require('del');
-const typescript = require('gulp-typescript');
 
-gulp.task('clean', function() {
+// gulp plugins
+const babel = require('gulp-babel');
+const eslint = require('gulp-eslint');
+const sourcemaps = require('gulp-sourcemaps');
+
+// utils
+const del = require('del');
+const spawn = require('child_process').spawn;
+
+const babelConfig = {
+  'retainLines': true
+};
+if (process.execArgv.indexOf('--harmony_async_await') < 0) {
+  console.log('Transpiling async/await...');
+  babelConfig.plugins = ['transform-decorators-legacy', 'transform-async-to-generator'];
+} else {
+  console.log('Using native async/await...');
+  babelConfig.plugins = ['transform-decorators-legacy'];
+}
+
+gulp.task('clean', function () {
   return del(['dist/**']);
 });
 
-gulp.task('lint', function() {
+gulp.task('lint', function () {
   return gulp.src(['./src/**/*.js', './test/**/*.js', 'gulpfile.js'])
-             .pipe(eslint())
-             .pipe(eslint.format());
-            //  .pipe(eslint.failAfterError());
+    .pipe(eslint())
+    .pipe(eslint.format())
+    .pipe(eslint.failAfterError());
 });
 
 gulp.task('build', ['clean'], function () {
   return gulp.src('src/**/*.js')
     .pipe(sourcemaps.init())
-    .pipe(typescript({
-        typescript: require('typescript'),
-        allowJs: true,
-        experimentalDecorators: true,
-        // emitDecoratorMetadata: true,
-        target: 'ES6',
-      }))
-    .on('error', function(e) {
-      console.error(e.stack);
-      this.emit('end');
-    })
+    .pipe(babel(babelConfig))
     .pipe(sourcemaps.write('.'))
     .pipe(gulp.dest('dist'));
 });
 
 // BEGIN watch stuff
 let server;
-gulp.task('serve', ['build'], function() {
+gulp.task('serve', ['build'], function () {
   if (server) {
     server.kill();
   }
@@ -58,7 +64,7 @@ process.on('exit', () => {
     server.kill();
   }
 });
-gulp.task('watch', ['lint', 'serve'], function() {
+gulp.task('watch', ['lint', 'serve'], function () {
   gulp.watch('src/**/*.js', {interval: 1000, mode: 'poll'}, ['lint', 'serve']);
   gulp.watch('.ravelrc', {interval: 1000, mode: 'poll'}, ['serve']);
 });

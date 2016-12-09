@@ -7,7 +7,7 @@ const Resource = Ravel.Resource;
  * Endpoints for npm access [public|restricted].
  */
 class PackageAccess extends Resource {
-  constructor() {
+  constructor () {
     super('/-/package/:packageId/access');
   }
 }

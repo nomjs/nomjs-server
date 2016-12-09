@@ -11,20 +11,20 @@ const Module = Ravel.Module;
  */
 @inject('rethink')
 class Stars extends Module {
-  constructor(rethink) {
+  constructor (rethink) {
     super();
     this.rethink = rethink;
   }
 
-  getStars(userId) {
+  getStars (userId) {
     return this.rethink.getStars(userId);
   }
 
-  star(userId, packageId) {
+  star (userId, packageId) {
     return this.rethink.star(userId, packageId);
   }
 
-  unstar(userId, packageId) {
+  unstar (userId, packageId) {
     return this.rethink.unstar(userId, packageId);
   }
 }

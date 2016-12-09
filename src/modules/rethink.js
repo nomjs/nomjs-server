@@ -7,12 +7,12 @@ const prelisten = Module.prelisten;
 
 @inject('rethinkdb')
 class RethinkStorage extends Module {
-  constructor(r) {
+  constructor (r) {
     super();
     this.r = r;
   }
 
-  createDatabase(name) {
+  createDatabase (name) {
     return new Promise((resolve, reject) => {
       this.r.dbCreate(name).run(this.conn, (err) => {
         if (err && !err.message.includes('already exists')) {
@@ -24,10 +24,10 @@ class RethinkStorage extends Module {
     });
   }
 
-  createTable(name, pkey) {
+  createTable (name, pkey) {
     return new Promise((resolve, reject) => {
       this.r.tableCreate(name, {
-        primaryKey: pkey ? pkey : 'id'
+        primaryKey: pkey || 'id'
       }).run(this.conn, (err) => {
         if (err && !err.message.includes('already exists')) {
           reject(err);
@@ -42,7 +42,7 @@ class RethinkStorage extends Module {
    * Creates connection and intializes database
    */
   @prelisten
-  init() {
+  init () {
     this.r.connect({
       db: this.params.get('rethink db name'),
       host: this.params.get('rethink host'),
@@ -86,7 +86,7 @@ class RethinkStorage extends Module {
     });
   }
 
-  getUser(id) {
+  getUser (id) {
     return new Promise((resolve, reject) => {
       this.r.table('users').get(id).run(this.conn, (err, result) => {
         if (err) {
@@ -98,7 +98,7 @@ class RethinkStorage extends Module {
     });
   }
 
-  findOrCreateUser(profile, email) {
+  findOrCreateUser (profile, email) {
     const user = {
       id: profile.id,
       email: email
@@ -114,7 +114,7 @@ class RethinkStorage extends Module {
     });
   }
 
-  removeUser(id) {
+  removeUser (id) {
     return new Promise((resolve, reject) => {
       this.r.table('users').get(id).delete().run(this.conn, (err) => {
         if (err) {
@@ -126,7 +126,7 @@ class RethinkStorage extends Module {
     });
   }
 
-  getPackage(id) {
+  getPackage (id) {
     return new Promise((resolve, reject) => {
       this.r.table('packages').get(id).run(this.conn, (err, result) => {
         if (err) {
@@ -140,7 +140,7 @@ class RethinkStorage extends Module {
     });
   }
 
-  createPackage(packageInfo) {
+  createPackage (packageInfo) {
     return new Promise((resolve, reject) => {
       this.r.table('packages').insert(packageInfo).run(this.conn, (err, result) => {
         if (err) {
@@ -152,7 +152,7 @@ class RethinkStorage extends Module {
     });
   }
 
-  updatePackage(packageInfo) {
+  updatePackage (packageInfo) {
     return new Promise((resolve, reject) => {
       this.r.table('packages').get(packageInfo.name).update(packageInfo).run(this.conn, (err, result) => {
         if (err) {
@@ -164,7 +164,7 @@ class RethinkStorage extends Module {
     });
   }
 
-  createTarball(name, buffer) {
+  createTarball (name, buffer) {
     return new Promise((resolve, reject) => {
       this.r.table('tarballs').insert({ name: name, buffer: buffer }).run(this.conn, (err, result) => {
         if (err) {
@@ -176,7 +176,7 @@ class RethinkStorage extends Module {
     });
   }
 
-  getTarball(key) {
+  getTarball (key) {
     return new Promise((resolve, reject) => {
       this.r.table('tarballs').get(key).run(this.conn, (err, result) => {
         if (err) {
@@ -191,9 +191,9 @@ class RethinkStorage extends Module {
     });
   }
 
-  getStars(userId) {
+  getStars (userId) {
     return new Promise((resolve, reject) => {
-      this.r.table('users').get(userId).run(this.conn, (err, result) =>  {
+      this.r.table('users').get(userId).run(this.conn, (err, result) => {
         if (err) {
           reject(new this.ApplicationError.NotFound(
             `User with id ${userId} does not exist in nomjs-registry`));
@@ -204,14 +204,14 @@ class RethinkStorage extends Module {
     });
   }
 
-  star(userId, packageId) {
+  star (userId, packageId) {
     const r = this.r;
     const newStar = {};
     newStar[packageId] = true;
     return new Promise((resolve, reject) => {
       r.table('users').get(userId).update({
         stars: r.row('stars').default({}).merge(newStar)
-      }).run(this.conn, (err, result) =>  {
+      }).run(this.conn, (err, result) => {
         if (err) {
           reject(new this.ApplicationError.NotFound(
             `User with id ${userId} does not exist in nomjs-registry`));
@@ -222,12 +222,12 @@ class RethinkStorage extends Module {
     });
   }
 
-  unstar(userId, packageId) {
+  unstar (userId, packageId) {
     const r = this.r;
     return new Promise((resolve, reject) => {
       r.table('users').get(userId).update({
         stars: r.literal(r.row('stars').default({}).without(packageId))
-      }).run(this.conn, (err, result) =>  {
+      }).run(this.conn, (err, result) => {
         if (err) {
           reject(new this.ApplicationError.NotFound(
             `User with id ${userId} does not exist in nomjs-registry`));

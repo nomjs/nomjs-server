@@ -5,20 +5,20 @@ const inject = Ravel.inject;
 const Module = Ravel.Module;
 
 class UserOrgError extends Ravel.Error {
-  constructor(orgname) {
+  constructor (orgname) {
     super(`User is not in org ${orgname}`, Ravel.httpCodes.FORBIDDEN);
   }
 }
 
 class NonexistentRepoError extends Ravel.Error {
-  constructor(org, name) {
+  constructor (org, name) {
     super(`GitHub repository ${org}/${name} does not exist.`, Ravel.httpCodes.NOT_FOUND);
   }
 }
 
 @inject('github')
 class GitHubAuth extends Module {
-  constructor(GitHubApi) {
+  constructor (GitHubApi) {
     super();
     this.github = new GitHubApi({
       // required
@@ -38,7 +38,7 @@ class GitHubAuth extends Module {
   /**
    * Synchronous OAuth login. Only works for the next request.
    */
-  tokenAuth(token) {
+  tokenAuth (token) {
     this.github.authenticate({
       type: 'oauth',
       token: token
@@ -51,7 +51,7 @@ class GitHubAuth extends Module {
    * @param {String} token
    * @return {Promise} resolves (with the token) if the token is valid and has the correct scopes, rejects otherwise
    */
-  verifyToken(token) {
+  verifyToken (token) {
     return this.getOrgs(token)
     .then(() => {
       return token;
@@ -70,7 +70,7 @@ class GitHubAuth extends Module {
    * @param {String} password their GitHub password
    * @param {String} twoFactorCode their current two-factor auth code.
    */
-  generateToken(username, password, twoFactorCode) {
+  generateToken (username, password, twoFactorCode) {
     const headers = {};
     if (twoFactorCode !== undefined) {
       headers['X-GitHub-OTP'] = twoFactorCode;
@@ -84,7 +84,7 @@ class GitHubAuth extends Module {
       this.github.authorization.create({
         scopes: ['read:org'],
         note: 'nomjs-registry',
-        note_url: 'https://github.com/nomjs/nomjs-registry.git', //eslint-disable-line camelcase
+        note_url: 'https://github.com/nomjs/nomjs-registry.git', // eslint-disable-line camelcase
         headers: headers
       }, (err, res) => {
         if (err) {
@@ -101,11 +101,11 @@ class GitHubAuth extends Module {
    * @param {String} token the OAuth token
    * @return {Promise} resolves with an Object of user info if the token works, rejects otherwise
    */
-  getProfile(token) {
+  getProfile (token) {
     return new Promise((resolve, reject) => {
       this.tokenAuth(token);
       this.github.user.get({}, (err, result) => {
-        if (err) {reject(err);} else {resolve(result);}
+        if (err) { reject(err); } else { resolve(result); }
       });
     });
   }
@@ -117,13 +117,13 @@ class GitHubAuth extends Module {
    * @return {Promise} resolves if the user represented by token can administer the repository matching scope/repoName,
    *                   rejects otherwise
    */
-  canAdministerRepository(token, scope, repoName) {
+  canAdministerRepository (token, scope, repoName) {
     return new Promise((resolve, reject) => {
       this.tokenAuth(token);
       this.github.repos.get({user: scope, repo: repoName}, (err, result) => {
         if (err || !result || !result.permissions.admin) { // { admin: true, push: true, pull: true }
           if (err.code === 404) {
-            reject(new NonexistentRepoError(scope,repoName));
+            reject(new NonexistentRepoError(scope, repoName));
           } else {
             reject(err);
           }
@@ -141,13 +141,13 @@ class GitHubAuth extends Module {
    * @return {Promise} resolves if the user represented by token can push to the repository matching scope/repoName,
    *                   rejects otherwise
    */
-  canPushToRepository(token, scope, repoName) {
+  canPushToRepository (token, scope, repoName) {
     return new Promise((resolve, reject) => {
       this.tokenAuth(token);
       this.github.repos.get({user: scope, repo: repoName}, (err, result) => {
         if (err || !result || !result.permissions.push) { // { admin: true, push: true, pull: true }
           if (err.code === 404) {
-            reject(new NonexistentRepoError(scope,repoName));
+            reject(new NonexistentRepoError(scope, repoName));
           } else {
             reject(err);
           }
@@ -162,7 +162,7 @@ class GitHubAuth extends Module {
    * Middleware for populating koa context with user profile
    * based on an auth token.
    */
-  profileMiddleware() {
+  profileMiddleware () {
     const self = this;
     return function*(next) {
       const token = this.headers.authorization.match(this.bearerRegex);
@@ -183,11 +183,11 @@ class GitHubAuth extends Module {
    * @param {String} token the OAuth token
    * @return {Promise} resolves with an Array[Object] of orgs if the token works, rejects otherwise
    */
-  getOrgs(token) {
+  getOrgs (token) {
     return new Promise((resolve, reject) => {
       this.tokenAuth(token);
       this.github.user.getOrgs({}, (err, result) => {
-        if (err) {reject(err);} else {resolve(result);}
+        if (err) { reject(err); } else { resolve(result); }
       });
     });
   }
@@ -196,7 +196,7 @@ class GitHubAuth extends Module {
    * @param {String} token the OAuth token
    * @return {Promise} resolves if the given user is in the specified org, rejects otherwise
    */
-  userInOrg(token, orgName) {
+  userInOrg (token, orgName) {
     return this.getOrgs(token).then((orgs) => {
       if (orgs.filter(o => o.login === orgName).length === 1) {
         return Promise.resolve();
