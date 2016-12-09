@@ -48,7 +48,7 @@ gulp.task('serve', ['build'], function () {
   if (server) {
     server.kill();
   }
-  server = spawn('node', ['--debug', 'app.js'], {
+  server = spawn('node', ['--harmony_async_await', '--debug', 'app.js'], {
     stdio: 'inherit',
     cwd: 'dist',
     env: process.env
