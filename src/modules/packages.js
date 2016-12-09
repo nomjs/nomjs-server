@@ -5,37 +5,37 @@ const inject = Ravel.inject;
 const Module = Ravel.Module;
 
 class UnscopedPackageError extends Ravel.Error {
-  constructor(msg) {
+  constructor (msg) {
     super(msg, Ravel.httpCodes.PERMANENT_REDIRECT);
   }
 }
 
 class UnsubmittedPackageError extends Ravel.Error {
-  constructor(msg) {
+  constructor (msg) {
     super(msg, Ravel.httpCodes.TEMPORARY_REDIRECT);
   }
 }
 
 class ExistingVersionError extends Ravel.Error {
-  constructor(msg) {
+  constructor (msg) {
     super(msg, Ravel.httpCodes.CONFLICT);
   }
 }
 
 class PrivatePackageError extends Ravel.Error {
-  constructor() {
+  constructor () {
     super('nomjs-registry does not accept private packages', Ravel.httpCodes.BAD_REQUEST);
   }
 }
 
 class MissingAttachmentError extends Ravel.Error {
-  constructor(msg) {
+  constructor (msg) {
     super(msg, Ravel.httpCodes.BAD_REQUEST);
   }
 }
 
 class MaxPackageSizeError extends Ravel.Error {
-  constructor(msg) {
+  constructor (msg) {
     super(msg, Ravel.httpCodes.REQUEST_ENTITY_TOO_LARGE);
   }
 }
@@ -46,22 +46,22 @@ class MaxPackageSizeError extends Ravel.Error {
 @inject('rethink')
 class Packages extends Module {
 
-  constructor(rethink) {
+  constructor (rethink) {
     super();
     this.rethink = rethink;
   }
 
-  isScoped(id) {
+  isScoped (id) {
     // TODO should we check for the slash as well? This is faster, but maybe not sufficient.
     return id[0] === '@';
   }
 
-  getScope(id) {
+  getScope (id) {
     this.getPackageName(id).scope;
   }
 
-  getPackageName(id) {
-    const scope = id.match(/^@([\w\-]+)\/([\w\-]+)$/);
+  getPackageName (id) {
+    const scope = id.match(/^@([\w-]+)\/([\w-]+)$/);
     if (scope === null) {
       throw new UnscopedPackageError(`Package id ${id} is not a scoped package`);
     }
@@ -71,7 +71,7 @@ class Packages extends Module {
     };
   }
 
-  _retrieveInfo(id) { //eslint-disable-line no-unused-vars
+  _retrieveInfo (id) { // eslint-disable-line no-unused-vars
     return this.rethink.getPackage(id)
       .catch((err) => {
         if (err instanceof this.ApplicationError.NotFound) {
@@ -88,8 +88,8 @@ class Packages extends Module {
   /**
    * Re-encode a package id to use urlencoded format for slashes
    */
-  encode(id) {
-    return id.replace('/','%2f');
+  encode (id) {
+    return id.replace('/', '%2f');
   }
 
   /**
@@ -97,7 +97,7 @@ class Packages extends Module {
    * @param id {String} the package name (such as @raveljs/ravel).
    * @return {Promise} resolves if the package is in the nom registry, rejects otherwise.
    */
-  info(id) {
+  info (id) {
     this.log.info(`client asked for info on: ${id}`);
 
     if (this.isScoped(id)) {
@@ -109,7 +109,7 @@ class Packages extends Module {
     }
   }
 
-  shasum(id, version) {
+  shasum (id, version) {
     return this.info(id).then((info) => {
       return new Promise((resolve, reject) => {
         try {
@@ -121,21 +121,21 @@ class Packages extends Module {
     });
   }
 
-  getLatestPackageVersion(npmPackageInfo) {
+  getLatestPackageVersion (npmPackageInfo) {
     try {
       const semver = npmPackageInfo['dist-tags'].latest;
-      if (semver === null) { throw new Error();}
+      if (semver === null) { throw new Error(); }
       return semver;
     } catch (err) {
       throw new Error('no version with tag \'latest\'');
     }
   }
 
-  getLatestPackageInfo(npmPackageInfo) {
+  getLatestPackageInfo (npmPackageInfo) {
     return npmPackageInfo.versions[this.getLatestPackageVersion(npmPackageInfo)];
   }
 
-  getTarballFromRequest(name, version, npmPackageInfo) {
+  getTarballFromRequest (name, version, npmPackageInfo) {
     if (npmPackageInfo._attachments === undefined || npmPackageInfo._attachments[`${name}-${version}.tgz`] === undefined) {
       throw new MissingAttachmentError(`Tarball for package ${name} at version ${version} not found.`);
     } else {
@@ -150,7 +150,7 @@ class Packages extends Module {
     }
   }
 
-  getTarballFromDB(key) {
+  getTarballFromDB (key) {
     return this.rethink.getTarball(key);
   }
 
@@ -166,7 +166,7 @@ class Packages extends Module {
    *   @param {Object} _attachments
    * @return {Promise} resolves when package publish is creation, rejects with any errors
    */
-  createPackage(publisher, args) {
+  createPackage (publisher, args) {
     try {
       const currentTime = new Date();
       const pInfo = Object.create(null);
@@ -223,7 +223,7 @@ class Packages extends Module {
    *   @param {Object} _attachments
    * @return {Promise} resolves when package publish is creation, rejects with any errors
    */
-  updatePackage(publisher, existing, newInfo) {
+  updatePackage (publisher, existing, newInfo) {
     try {
       const currentTime = new Date();
       // reject private packages
@@ -243,7 +243,7 @@ class Packages extends Module {
       // overwrite package metadata with latest info
       if (newInfo.readme) { existing.readme = newInfo.readme; }
       // update maintainer info (push new, update existing)
-      const existingMaintainers = existing.maintainers.filter(m =>  m.id === publisher.id);
+      const existingMaintainers = existing.maintainers.filter(m => m.id === publisher.id);
       if (existingMaintainers.length === 0) {
         existing.maintainers.push({
           id: publisher.id,
@@ -273,7 +273,7 @@ class Packages extends Module {
       return this.rethink.createTarball(`${existing.name}-${newVersion}.tgz`, buffer).then(() => {
         return this.rethink.updatePackage(newInfo);
       });
-    } catch(err) {
+    } catch (err) {
       this.log.error(err.stack);
       return Promise.reject(err);
     }
@@ -291,7 +291,7 @@ class Packages extends Module {
    *   @param {Object} _attachments
    * @return {Promise} resolves when package publish is complete, rejects with any errors
    */
-  publish(publisher,  args) {
+  publish (publisher, args) {
     return this.rethink.getPackage(args.name)
       .then((existing) => {
         // update existing package

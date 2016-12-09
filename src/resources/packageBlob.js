@@ -6,14 +6,14 @@ const inject = Ravel.inject;
 
 @inject('packages')
 class PackageBlobResource extends Resource {
-  constructor(packages) {
+  constructor (packages) {
     super('/:scope/:name/-/:scope/');
     this.packages = packages;
   }
 
-  get(ctx) {
+  get (ctx) {
     const id = ctx.params.id;
-    const version = id.substring(id.lastIndexOf('-')+1, id.length-4);
+    const version = id.substring(id.lastIndexOf('-') + 1, id.length - 4);
     return this.packages.shasum(`${ctx.params.scope}/${ctx.params.name}`, version)
     .then((sum) => {
       if (sum === ctx.request.get('If-None-Match')) {

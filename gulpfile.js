@@ -1,6 +1,6 @@
 'use strict';
 
-//gulp
+// gulp
 const gulp = require('gulp');
 
 // plugins
@@ -11,8 +11,22 @@ const del = require('del');
 const spawn = require('child_process').spawn;
 
 const TESTS = ['test-dist/**/*.spec.js'];
+const babelConfig = {
+  'retainLines': true
+};
+if (process.execArgv.indexOf('--harmony_async_await') < 0) {
+  console.log('Transpiling async/await...');
+  babelConfig.plugins = ['transform-decorators-legacy', 'transform-async-to-generator'];
+} else {
+  console.log('Using native async/await...');
+  babelConfig.plugins = ['transform-decorators-legacy'];
+}
 
-gulp.task('lint', function() {
+gulp.task('clean', function () {
+  return del(['dist/**']);
+});
+
+gulp.task('lint', function () {
   return gulp.src(['./src/**/*.js', './test/**/*.js', 'gulpfile.js'])
     .pipe(plugins.eslint({configFile: '.eslintrc.json'}))
     .pipe(plugins.eslint.format())
@@ -27,15 +41,9 @@ gulp.task('clean', function() {
 
 gulp.task('transpile-src', ['clean', 'lint'], function() {
   return gulp.src('src/**/*.js')
-    .pipe(plugins.sourcemaps.init())
-    .pipe(plugins.typescript({
-      typescript: require('typescript'),
-      allowJs: true,
-      experimentalDecorators: true,
-      // emitDecoratorMetadata: true,
-      target: 'ES6'
-    }))
-    .pipe(plugins.sourcemaps.write('.'))
+    .pipe(sourcemaps.init())
+    .pipe(babel(babelConfig))
+    .pipe(sourcemaps.write('.'))
     .pipe(gulp.dest('dist'));
 });
 
@@ -80,7 +88,7 @@ gulp.task('serve', ['build'], function () {
   if (server) {
     server.kill();
   }
-  server = spawn('node', ['--debug', 'app.js'], {
+  server = spawn('node', ['--harmony_async_await', '--debug', 'app.js'], {
     stdio: 'inherit',
     cwd: 'dist',
     env: process.env

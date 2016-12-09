@@ -10,7 +10,7 @@ const before = Resource.before;
  */
 @inject('koa-better-body', 'packages', 'stars', 'github-auth')
 class PackageResource extends Resource {
-  constructor(bodyParser, packages, stars, github) {
+  constructor (bodyParser, packages, stars, github) {
     super('/');
     this.bodyParser = bodyParser();
     this.packages = packages;
@@ -27,7 +27,7 @@ class PackageResource extends Resource {
    * If a package is in npm and nom should proxy rather than return a redirect:
    *  - https://registry.npmjs.org/ravel?npmproxy=true
    */
-  get(ctx) {
+  get (ctx) {
     // just redirect if the user asks to search npm directly
     if (ctx.query.proxynpm) {
       ctx.set('Location', `https://registry.npmjs.org/${this.packages.encode(ctx.params.id)}`);
@@ -38,10 +38,11 @@ class PackageResource extends Resource {
           ctx.body = packageInfo;
         })
         .catch((err) => {
-          switch(err.constructor.name) {
+          switch (err.constructor.name) {
             case 'UnscopedPackageError':
             case 'UnsubmittedPackageError':
               ctx.set('Location', `https://registry.npmjs.org/${this.packages.encode(ctx.params.id)}`);
+              break;
             default:
               // rethrow
               return Promise.reject(err);
@@ -55,7 +56,7 @@ class PackageResource extends Resource {
    * also unfortunately used for starring packages :( Stupid npm...
    */
   @before('githubProfile', 'bodyParser')
-  put(ctx) {
+  put (ctx) {
     if (Object.keys(ctx.request.fields).length === 1 && ctx.request.fields.users) {
       if (Object.keys(ctx.request.fields.users).length > 0) {
         this.log.info(`user ${ctx.user.login} starring ${ctx.params.id}`);

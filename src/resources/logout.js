@@ -17,13 +17,13 @@ const before = Resource.before;
  */
 @inject('github-auth')
 class LogoutResource extends Resource {
-  constructor(github) {
+  constructor (github) {
     super('/-/user/token');
     this.githubProfile = github.profileMiddleware();
   }
 
   @before('githubProfile')
-  delete(ctx) {
+  delete (ctx) {
     ctx.status = 200;
     ctx.response.body = {ok: true};
   }

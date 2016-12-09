@@ -10,8 +10,8 @@ const before = Resource.before;
  */
 @inject('koa-better-body', 'github-auth', 'users')
 class UserResource extends Resource {
-  constructor(bodyParser, github, users) {
-    //TODO what is the dash?
+  constructor (bodyParser, github, users) {
+    // TODO what is the dash?
     super('/-/user/');
     this.bodyParser = bodyParser();
     this.github = github;
@@ -19,7 +19,7 @@ class UserResource extends Resource {
   }
 
   @before('bodyParser')
-  put(ctx) {
+  put (ctx) {
     let promise, token;
     // we use the special username 'oauth' to switch into token mode (for 2fa users)
     if (ctx.request.fields.name === 'oauth') {

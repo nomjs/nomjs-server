@@ -10,16 +10,16 @@ const inject = Ravel.inject;
  */
 @inject('stars')
 class Stars extends Resource {
-  constructor(stars) {
+  constructor (stars) {
     super('/-/_view/starredByUser');
     this.stars = stars;
   }
 
-  getAll(ctx) {
+  getAll (ctx) {
     const id = Number(ctx.query.key.replace(/"/g, ''));
     return this.stars.getStars(id).then((results) => {
       ctx.body = {
-        rows: Object.keys(results).map((e) => {return {'value': e};})
+        rows: Object.keys(results).map((e) => { return {'value': e}; })
       };
     });
   }
