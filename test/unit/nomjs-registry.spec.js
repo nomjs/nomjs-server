@@ -5,12 +5,12 @@ const expect = chai.expect;
 
 const shell = require('shelljs');
 
-describe('Test `npm install` commands', function() {
+describe('Test `npm install` commands', function () {
   this.timeout('60000');
 
   let nom;
 
-  before('setup nom before all tests', function(done) {
+  before('setup nom before all tests', function (done) {
     log.debug('Firing up nom...');
     nom = require('../../dist/app.js');
     nom.on('post init', () => {
@@ -20,15 +20,15 @@ describe('Test `npm install` commands', function() {
     nom.start();
   });
 
-  it('validate we can proxy a package', function(done) {
+  it('validate we can proxy a package', function (done) {
     console.log('Running \'npm install\'');
-    shell.exec(`npm --loglevel=verbose --registry http://127.0.0.1:9080 install @raveljs/ravel`, function(code, stdout, stderr) {
+    shell.exec(`npm --loglevel=verbose --registry http://127.0.0.1:9080 install @raveljs/ravel`, function (code, stdout, stderr) {
       expect(code).to.equal(0);
       done();
     });
   });
 
-  after('cleanup nom after all tests', function(done) {
+  after('cleanup nom after all tests', function (done) {
     log.debug('Shutting down nom...');
     if (nom) {
       nom.on('end', () => {

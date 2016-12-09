@@ -4,7 +4,7 @@
 const gulp = require('gulp');
 
 // plugins
-const plugins = require( 'gulp-load-plugins' )();
+const plugins = require('gulp-load-plugins')();
 
 // utils
 const del = require('del');
@@ -33,37 +33,31 @@ gulp.task('lint', function () {
     .pipe(plugins.eslint.failAfterError());
 });
 
-gulp.task('clean', function() {
+gulp.task('clean', function () {
   return del([
     'reports', 'dist', 'test-dist'
   ]);
 });
 
-gulp.task('transpile-src', ['clean', 'lint'], function() {
+gulp.task('transpile-src', ['clean', 'lint'], function () {
   return gulp.src('src/**/*.js')
-    .pipe(sourcemaps.init())
-    .pipe(babel(babelConfig))
-    .pipe(sourcemaps.write('.'))
+    .pipe(plugins.sourcemaps.init())
+    .pipe(plugins.babel(babelConfig))
+    .pipe(plugins.sourcemaps.write('.'))
     .pipe(gulp.dest('dist'));
 });
 
-gulp.task('transpile-test', ['clean', 'lint'], function() {
+gulp.task('transpile-test', ['clean', 'lint'], function () {
   return gulp.src('test/**/*.js')
     .pipe(plugins.sourcemaps.init())
-    .pipe(plugins.typescript({
-      typescript: require('typescript'),
-      allowJs: true,
-      experimentalDecorators: true,
-      // emitDecoratorMetadata: true,
-      target: 'ES6'
-    }))
+    .pipe(plugins.babel(babelConfig))
     .pipe(plugins.sourcemaps.write('.'))
     .pipe(gulp.dest('test-dist'));
 });
 
 gulp.task('test', ['transpile-src', 'transpile-test'], function () {
   const env = plugins.env.set({
-    LOG_LEVEL : 'debug'
+    LOG_LEVEL: 'debug'
   });
   return gulp.src(TESTS)
     .pipe(env)
@@ -73,8 +67,8 @@ gulp.task('test', ['transpile-src', 'transpile-test'], function () {
         dot: '-',
         doc: 'test-dist/test-results.html'
       },
-      quiet:false,
-      colors:true,
+      quiet: false,
+      colors: true,
       timeout: 10000
     }))
     .pipe(env.reset);
