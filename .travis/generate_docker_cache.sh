@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
-if [ ! -d "docker" ]
+if [ ! -d ".travis/docker" ]
 then
-  mkdir docker
-  docker export rethinkdb | gzip -c > docker/rethinkdb_export.tgz
-  docker export redis | gzip -c > docker/redis.tgz
+  mkdir .travis/docker
+  docker export rethinkdb | gzip -c > .travis/docker/rethinkdb_export.tgz
+  docker export redis | gzip -c > .travis/docker/redis.tgz
 fi

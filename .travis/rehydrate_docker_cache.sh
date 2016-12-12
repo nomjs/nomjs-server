@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
-if [ -d "docker" ]
+if [ -d ".travis/docker" ]
 then
-  for image in `ls docker`
+  for image in `ls .travis/docker`
   do
-    docker import docker/${image}
+    docker import .travis/docker/${image}
   done
 fi
