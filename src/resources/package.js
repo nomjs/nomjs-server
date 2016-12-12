@@ -49,7 +49,6 @@ class PackageResource extends Resource {
               log.error(`User requested an unscoped package, or one that we don't host: ${ctx.params.id}`);
               ctx.set('Location', `https://registry.npmjs.org/${this.packages.encode(ctx.params.id)}`);
               ctx.status = 301;
-              ctx.body = {};
               break;
             default:
               // rethrow
