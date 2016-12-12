@@ -11,6 +11,9 @@ describe('Test `npm install` commands', function () {
   let nom;
 
   before('setup nom before all tests', function (done) {
+    log.info('Creating temporary directory for npm install');
+    shell.mkdir('-p', 'test-node-modules');
+
     log.info('Firing up nom...');
     nom = require('../../dist/app.js');
     nom.on('post init', () => {
@@ -22,7 +25,7 @@ describe('Test `npm install` commands', function () {
 
   it('validate we can proxy a package', function (done) {
     log.info('Running \'npm install\'');
-    shell.exec(`npm --loglevel=verbose --registry http://127.0.0.1:9080 install leftpad`, function (code, stdout, stderr) {
+    shell.exec(`npm --loglevel=info --registry http://127.0.0.1:9080 --prefix ./test-node-modules install leftpad`, function (code, stdout, stderr) {
       expect(code).to.equal(0);
       done();
     });
@@ -30,13 +33,16 @@ describe('Test `npm install` commands', function () {
 
   it('validate we can install a package', function (done) {
     log.info('Running \'npm install\'');
-    shell.exec(`npm --loglevel=verbose --registry http://127.0.0.1:9080 install @raveljs/ravel`, function (code, stdout, stderr) {
+    shell.exec(`npm --loglevel=info --registry http://127.0.0.1:9080 --prefix ./test-node-modules install @mlaccetti/null`, function (code, stdout, stderr) {
       expect(code).to.equal(0);
       done();
     });
   });
 
   after('cleanup nom after all tests', function (done) {
+    log.info('Removing temporary directory after npm install');
+    shell.rm('-rf', 'test-node-modules');
+
     log.info('Shutting down nom...');
     if (nom) {
       nom.on('end', () => {
