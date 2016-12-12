@@ -8,3 +8,4 @@ test-dist/*
 .idea
 coverage/
 npm-debug.log*
+.travis/docker

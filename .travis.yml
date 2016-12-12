@@ -1,6 +1,13 @@
+sudo: required
+
+services:
+  - docker
+
 language: node_js
 
-sudo: false
+node_js:
+  - "7"
+  - "6"
 
 env:
   - CXX=g++-4.8
@@ -12,10 +19,16 @@ addons:
     packages:
     - g++-4.8
 
-node_js:
-  - "7"
-  - "6"
+cache:
+  directories:
+    - node_modules
+    - .travis/docker
 
 before_install:
-  - $CXX --version
   - npm install
+  - ./travis/rehydrate_docker_cache.sh
+  - docker run --name rethinkdb -p 28015:28015 -p 9081:8080 -d rethinkdb:2.3
+  - docker run --name redis -p 6379:6379 -d  redis:3.2-alpine
+
+after_script:
+  - ./.travis/generate_docker_cache.sh
