@@ -20,6 +20,9 @@ class UserResource extends Resource {
 
   @before('bodyParser')
   put (ctx) {
+    console.log('Logging in a user.');
+    this.log.info('Logging in a user.');
+
     let promise, token;
     // we use the special username 'oauth' to switch into token mode (for 2fa users)
     if (ctx.request.fields.name === 'oauth') {

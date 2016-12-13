@@ -68,7 +68,9 @@ $ npm --loglevel=verbose --registry http://0.0.0.0:9080 install @raveljs/ravel
 $ npm --loglevel=verbose  --registry http://0.0.0.0:9080 publish .
 ```
 
-### Testing Under Windows
+### Testing Manually
+
+Fire up the containers that we need to back this:
 
 ```cmd
 docker run -p 28015:28015 -p 9081:8080 -d rethinkdb:2.3

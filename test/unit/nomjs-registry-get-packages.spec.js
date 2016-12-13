@@ -10,17 +10,20 @@ describe('Test `npm install` commands', function () {
 
   let nom;
 
-  before('setup nom before all tests', function (done) {
+  before('setup nom before all tests', function () {
     log.info('Creating temporary directory for npm install');
     shell.mkdir('-p', 'test-node-modules');
 
     log.info('Firing up nom...');
     nom = require('../../dist/app.js');
-    nom.on('post init', () => {
-      log.info('Nom up and running.');
-      done();
+    return new Promise((resolve) => {
+      nom.on('post init', () => {
+        log.info('Nom up and running.');
+
+        setTimeout(() => resolve(), 1000);
+      });
+      nom.start();
     });
-    nom.start();
   });
 
   it('validate we can proxy a package', function (done) {
