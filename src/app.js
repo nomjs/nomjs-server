@@ -12,6 +12,7 @@ app.registerParameter('max package size bytes', true, 10 * 1024 * 1024);
 
 app.modules(path.resolve(__dirname, './modules'));
 app.resources(path.resolve(__dirname, './resources'));
+app.routes(path.resolve(__dirname, './routes/user.js'));
 
 if (require.main === module) {
   app.start();

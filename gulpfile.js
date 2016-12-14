@@ -97,6 +97,10 @@ gulp.task('watch', ['lint', 'serve'], function () {
   gulp.watch('src/**/*.js', {interval: 1000, mode: 'poll'}, ['lint', 'serve']);
   gulp.watch('.ravelrc', {interval: 1000, mode: 'poll'}, ['serve']);
 });
+
+gulp.task('watch-code', ['lint', 'build'], function () {
+  gulp.watch('src/**/*.js', {interval: 1000, mode: 'poll'}, ['lint', 'build']);
+});
 // END watch stuff
 
 gulp.task('default', ['watch']);
