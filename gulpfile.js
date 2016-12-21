@@ -24,7 +24,9 @@ if (!process.execArgv || process.execArgv.indexOf('--harmony_async_await') < 0) 
 }
 
 gulp.task('clean', function () {
-  return del(['dist/**']);
+  return del([
+    'reports', 'dist', 'test-dist'
+  ]);
 });
 
 gulp.task('lint', function () {
@@ -34,13 +36,7 @@ gulp.task('lint', function () {
     .pipe(plugins.eslint.failAfterError());
 });
 
-gulp.task('clean', function () {
-  return del([
-    'reports', 'dist', 'test-dist'
-  ]);
-});
-
-gulp.task('transpile-src', ['clean', 'lint'], function () {
+gulp.task('transpile-src', ['lint'], function () {
   return gulp.src('src/**/*.js')
     .pipe(plugins.sourcemaps.init())
     .pipe(plugins.babel(babelConfig))
@@ -48,7 +44,7 @@ gulp.task('transpile-src', ['clean', 'lint'], function () {
     .pipe(gulp.dest('dist'));
 });
 
-gulp.task('transpile-test', ['clean', 'lint'], function () {
+gulp.task('transpile-test', ['lint'], function () {
   return gulp.src('test/**/*.js')
     .pipe(plugins.sourcemaps.init())
     .pipe(plugins.babel(babelConfig))
@@ -67,7 +63,7 @@ gulp.task('test', ['transpile-src', 'transpile-test'], function () {
     .pipe(env.reset);
 });
 
-gulp.task('build', ['clean', 'transpile-src']);
+gulp.task('build', ['transpile-src']);
 
 // BEGIN watch stuff
 let server;
@@ -104,3 +100,5 @@ gulp.task('watch-code', ['lint', 'build'], function () {
 // END watch stuff
 
 gulp.task('default', ['watch']);
+
+gulp.task('dist', ['clean', 'build']);
