@@ -5,7 +5,7 @@ numfiles=${#numfiles[@]}
 
 echo "Number of files: $numfiles"
 
-if [ $numfiles -ge 0 ]
+if [ $numfiles -ge 2 ]
 then
   echo "Rehydrating all Docker images."
   for image in `ls .travis/docker`

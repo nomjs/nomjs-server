@@ -5,7 +5,7 @@ numfiles=${#numfiles[@]}
 
 echo "Number of files: $numfiles"
 
-if [ $numfiles -le 0 ]
+if [ $numfiles -le 2 ]
 then
   echo "Backing up Docker images."
   mkdir -p .travis/docker
