@@ -26,13 +26,14 @@
   "scripts": {
     "start": "cd dist && node --require source-map-support/register app.js",
     "test": "gulp --require source-map-support/register test",
-    "debug": "gulp build && cd dist && node --debug-brk --require source-map-support/register app.js"
+    "debug": "gulp build && cd dist && node --debug-brk --require source-map-support/register app.js",
+    "debug-remote":"node --harmony_async_await --debug-brk=5858 $(which gulp) --require source-map-support/register test"
   },
   "dependencies": {
     "github": "7.1.0",
     "koa-better-body": "3.0.2",
-    "lodash": "^4.17.2",
-    "ravel": "0.18.0",
+    "lodash": "4.17.3",
+    "ravel": "0.18.1",
     "rethinkdb": "2.3.3"
   },
   "devDependencies": {
@@ -60,6 +61,6 @@
     "mocha-multi": "0.9.1",
     "run-sequence": "1.2.2",
     "shelljs": "0.7.5",
-    "source-map-support": "0.4.6"
+    "source-map-support": "0.4.8"
   }
 }

@@ -23,9 +23,10 @@ class UserRoutes extends Routes {
   // bind this method to an endpoint and verb with @mapping. This one will become GET /app
   @mapping(Routes.PUT, '/org.couchdb.user::user')
   @before('bodyParser')
-  async putHandler (ctx) {
+  putHandler (ctx) {
     this.log.info('Logging in a user.');
 
+    // FIXME we should look for all the required fields
     if (!ctx.request.fields.name) {
       return new Promise((resolve, reject) => {
         this.log.warn('No "name" field provided for authentication, faling.');
@@ -54,7 +55,7 @@ class UserRoutes extends Routes {
     this.log.info('Retrieving user profile.');
     return promise.then((t) => {
       token = t;
-      return this.github.getProfile(t);
+      return this.github.getProfile(token);
     })
     // create a new user in our database (for storing stars, etc.)
     // We don't store the token credential.
@@ -66,12 +67,13 @@ class UserRoutes extends Routes {
       // respond
       .then(() => {
         this.log.debug('User authenticated and signed in, returning information.');
-        ctx.status = Ravel.httpCodes.CREATED;
-        ctx.response.body = {
+        ctx.status = 201;
+        ctx.body = {
           ok: true,
           id: 'org.couchdb.user:oauth',
           'token': token
         };
+        this.log.debug('Status code: ', ctx.status);
       }).catch((err) => {
         this.log.error('Could not sign in user.', err);
         ctx.status = Ravel.httpCodes.INTERNAL_SERVER_ERROR;
