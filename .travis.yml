@@ -20,7 +20,6 @@ addons:
 
 cache:
   directories:
-    - node_modules
     - .travis/docker
 
 before_install:
