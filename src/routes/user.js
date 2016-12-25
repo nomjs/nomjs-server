@@ -11,10 +11,11 @@ const mapping = Routes.mapping;
 @inject('koa-convert', 'koa-better-body', 'github-auth', 'users')
 class UserRoutes extends Routes {
   constructor (convert, bodyParser, github, users) {
-    super('/-/user/');
+    super('/-/user');
 
     this.bodyParser = convert(bodyParser());
     this.github = github;
+    this.githubProfile = github.profileMiddleware();
     this.users = users;
 
     this.log.info('User routes created.');
@@ -78,6 +79,13 @@ class UserRoutes extends Routes {
         this.log.error('Could not sign in user.', err);
         ctx.status = Ravel.httpCodes.INTERNAL_SERVER_ERROR;
       });
+  }
+
+  @mapping(Routes.DELETE, '/token')
+  @before('githubProfile')
+  delete (ctx) {
+    ctx.status = 200;
+    ctx.response.body = {ok: true};
   }
 }
 

@@ -1,8 +1,5 @@
 const log = require('intel');
 
-const chai = require('chai');
-const expect = chai.expect;
-
 const spawn = require('child_process').spawn;
 
 describe('Test `npm auth` commands', function () {
@@ -28,19 +25,7 @@ describe('Test `npm auth` commands', function () {
     log.info('Running \'npm adduser\'');
 
     const npm = spawn('npm', ['--loglevel', 'verbose', '--registry', 'http://localhost:9080', 'adduser'], {silent: true});
-    npm.on('error', (err) => {
-      console.log('Failed to start child process: ', err);
-      done(err);
-    });
-
-    npm.on('exit', (code, signal) => {
-      console.log(`child process exited with code ${code}`);
-      expect(code).to.be(0);
-      done();
-    });
-
     npm.stdout.on('data', (data) => {
-      // console.log(`>> ${data}`);
       if (data.includes('Username:')) {
         console.log('Sending username.');
         npm.stdin.write('nomjs-bot\n');
@@ -54,26 +39,29 @@ describe('Test `npm auth` commands', function () {
     });
 
     npm.stderr.on('data', (data) => {
-      console.log(`stderr: ${data}`);
-
-      if (data.includes('verb exit [ 1, true ]')) {
+      if (data.includes('exit [ 1, true ]')) {
         npm.kill('SIGKILL');
-        done(new Error('npm threw an error.'));
+        return done(new Error('npm threw an error.'));
       } else if (data.includes('exit [ 0, true ]')) {
         npm.kill('SIGKILL');
-        done();
+        return done();
       }
     });
   });
 
-  after('cleanup nom after all tests', function (done) {
+  after('cleanup nom after all tests', function () {
     log.info('Shutting down nom...');
-    if (nom) {
-      nom.on('end', () => {
-        log.info('Nom shutdown.');
-        done();
-      });
-      nom.close();
-    }
+    return new Promise((resolve) => {
+      if (nom) {
+        nom.on('end', () => {
+          log.info('Nom shutdown.');
+
+          setTimeout(() => resolve(), 1000);
+        });
+        nom.close();
+      } else {
+        resolve();
+      }
+    });
   });
 });

@@ -42,17 +42,22 @@ describe('Test `npm install` commands', function () {
     });
   });
 
-  after('cleanup nom after all tests', function (done) {
+  after('cleanup nom after all tests', function () {
     log.info('Removing temporary directory after npm install');
     shell.rm('-rf', 'test-node-modules');
 
     log.info('Shutting down nom...');
-    if (nom) {
-      nom.on('end', () => {
-        log.info('Nom shutdown.');
-        done();
-      });
-      nom.close();
-    }
+    return new Promise((resolve) => {
+      if (nom) {
+        nom.on('end', () => {
+          log.info('Nom shutdown.');
+
+          setTimeout(() => resolve(), 1000);
+        });
+        nom.close();
+      } else {
+        resolve();
+      }
+    });
   });
 });
