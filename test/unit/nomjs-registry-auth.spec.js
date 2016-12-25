@@ -5,7 +5,7 @@ const expect = chai.expect;
 
 const spawn = require('child_process').spawn;
 
-describe('Test `npm install` commands', function () {
+describe('Test `npm auth` commands', function () {
   this.timeout('60000');
 
   let nom;
@@ -59,6 +59,9 @@ describe('Test `npm install` commands', function () {
       if (data.includes('verb exit [ 1, true ]')) {
         npm.kill('SIGKILL');
         done(new Error('npm threw an error.'));
+      } else if (data.includes('exit [ 0, true ]')) {
+        npm.kill('SIGKILL');
+        done();
       }
     });
   });

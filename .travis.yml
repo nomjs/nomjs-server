@@ -32,5 +32,5 @@ before_install:
 script:
   - node --harmony_async_await ./node_modules/gulp/bin/gulp.js --color --gulpfile gulpfile.js test
 
-after_script:
+before_cache:
   - ./.travis/generate_docker_cache.sh
