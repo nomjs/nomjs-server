@@ -7,7 +7,7 @@ describe('Test `npm auth` commands', function () {
 
   let nom;
 
-  before('setup nom before all tests', function () {
+  beforeAll('setup nom before all tests', function () {
     log.info('Firing up nom...');
     nom = require('../../dist/app.js');
 
@@ -49,7 +49,7 @@ describe('Test `npm auth` commands', function () {
     });
   });
 
-  after('cleanup nom after all tests', function () {
+  afterAll('cleanup nom after all tests', function () {
     log.info('Shutting down nom...');
     return new Promise((resolve) => {
       if (nom) {

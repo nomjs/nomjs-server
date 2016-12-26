@@ -10,7 +10,7 @@ describe('Test `npm install` commands', function () {
 
   let nom;
 
-  before('setup nom before all tests', function () {
+  beforeAll('setup nom before all tests', function () {
     log.info('Creating temporary directory for npm install');
     shell.mkdir('-p', 'test-node-modules');
 
@@ -42,7 +42,7 @@ describe('Test `npm install` commands', function () {
     });
   });
 
-  after('cleanup nom after all tests', function () {
+  afterAll('cleanup nom after all tests', function () {
     log.info('Removing temporary directory after npm install');
     shell.rm('-rf', 'test-node-modules');
 
