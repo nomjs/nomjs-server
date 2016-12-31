@@ -1,15 +1,19 @@
-const spawn = require('child_process').spawn;
+const mockery = require('mockery');
 
-const purgeCache = require('./cleanup').purgeCache;
+const spawn = require('child_process').spawn;
 
 describe('Test `npm auth` commands', function () {
   let nomAuth;
 
   before('setup nom before all tests', function () {
+    mockery.enable({
+      useCleanCache: true,
+      warnOnUnregistered: false
+    });
+
     console.info('Firing up nom...');
 
     return new Promise((resolve) => {
-      purgeCache('../../dist/app.js');
       nomAuth = require('../../dist/app.js');
       nomAuth.start().then(function () {
         console.info('Nom up and running.');
@@ -52,19 +56,17 @@ describe('Test `npm auth` commands', function () {
   });
 
   after('cleanup nom after all tests', function () {
-    this.timeout(30000);
+    mockery.disable();
     console.info('Shutting down nom...');
 
     return new Promise((resolve) => {
       if (nomAuth) {
         nomAuth.close().then(function () {
           console.info('Nom shutdown.');
-          nomAuth = undefined;
-          setTimeout(function () { resolve(); }, 2500);
+          resolve();
         });
       } else {
         console.info('No nom running, terminating.');
-        nomAuth = undefined;
         resolve();
       }
     });

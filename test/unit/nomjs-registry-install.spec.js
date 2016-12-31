@@ -1,21 +1,24 @@
 const chai = require('chai');
 const expect = chai.expect;
+const mockery = require('mockery');
 
 const shell = require('shelljs');
-
-const purgeCache = require('./cleanup').purgeCache;
 
 describe('Test `npm install` commands', function () {
   let nomInstall;
 
   before('setup nom before all tests', function () {
+    mockery.enable({
+      useCleanCache: true,
+      warnOnUnregistered: false
+    });
+
     console.info('Creating temporary directory for npm install');
     shell.mkdir('-p', 'test-node-modules');
 
     console.info('Firing up nom...');
 
     return new Promise((resolve) => {
-      purgeCache('../../dist/app.js');
       nomInstall = require('../../dist/app.js');
       nomInstall.start().then(function () {
         console.info('Nom up and running.');
@@ -45,7 +48,7 @@ describe('Test `npm install` commands', function () {
   });
 
   after('cleanup nom after all tests', function () {
-    this.timeout(30000);
+    mockery.disable();
 
     console.info('Removing temporary directory after npm install');
     shell.rm('-rf', 'test-node-modules');
@@ -55,12 +58,10 @@ describe('Test `npm install` commands', function () {
       if (nomInstall) {
         nomInstall.close().then(function () {
           console.info('Nom shutdown.');
-          nomInstall = undefined;
-          setTimeout(function () { resolve(); }, 2500);
+          resolve();
         });
       } else {
         console.info('No nom running, terminating.');
-        nomInstall = undefined;
         resolve();
       }
     });

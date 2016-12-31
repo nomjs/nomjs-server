@@ -59,6 +59,7 @@
     "intel": "1.1.2",
     "mocha": "3.2.0",
     "mocha-multi": "0.9.1",
+    "mockery": "^2.0.0",
     "run-sequence": "1.2.2",
     "shelljs": "0.7.5",
     "source-map-support": "0.4.8"
