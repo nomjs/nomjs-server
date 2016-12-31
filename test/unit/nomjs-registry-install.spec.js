@@ -3,26 +3,28 @@ const expect = chai.expect;
 
 const shell = require('shelljs');
 
-describe('Test `npm install` commands', () => {
-  let nom;
+const purgeCache = require('./cleanup').purgeCache;
 
-  before('setup nom before all tests', () => {
+describe('Test `npm install` commands', function () {
+  let nomInstall;
+
+  before('setup nom before all tests', function () {
     console.info('Creating temporary directory for npm install');
     shell.mkdir('-p', 'test-node-modules');
 
     console.info('Firing up nom...');
-    console.info(`Nom is: ${typeof nom}`);
-    nom = require('../../dist/app.js');
 
     return new Promise((resolve) => {
-      nom.start().then(() => {
+      purgeCache('../../dist/app.js');
+      nomInstall = require('../../dist/app.js');
+      nomInstall.start().then(function () {
         console.info('Nom up and running.');
         resolve();
       });
     });
   });
 
-  it('validate we can proxy a package', () => {
+  it('validate we can proxy a package', function () {
     return new Promise((resolve) => {
       console.info('Running \'npm install\'');
       shell.exec(`npm --loglevel=info --registry http://127.0.0.1:9080 --prefix ./test-node-modules install leftpad`, (code, stdout, stderr) => {
@@ -32,7 +34,7 @@ describe('Test `npm install` commands', () => {
     });
   });
 
-  it('validate we can install a package', () => {
+  it('validate we can install a package', function () {
     return new Promise((resolve) => {
       console.info('Running \'npm install\'');
       shell.exec(`npm --loglevel=info --registry http://127.0.0.1:9080 --prefix ./test-node-modules install @mlaccetti/null`, (code, stdout, stderr) => {
@@ -42,21 +44,23 @@ describe('Test `npm install` commands', () => {
     });
   });
 
-  after('cleanup nom after all tests', () => {
+  after('cleanup nom after all tests', function () {
+    this.timeout(30000);
+
     console.info('Removing temporary directory after npm install');
     shell.rm('-rf', 'test-node-modules');
 
     console.info('Shutting down nom...');
     return new Promise((resolve) => {
-      if (nom) {
-        nom.close().then(() => {
+      if (nomInstall) {
+        nomInstall.close().then(function () {
           console.info('Nom shutdown.');
-          nom = undefined;
-          resolve();
+          nomInstall = undefined;
+          setTimeout(function () { resolve(); }, 2500);
         });
       } else {
         console.info('No nom running, terminating.');
-        nom = undefined;
+        nomInstall = undefined;
         resolve();
       }
     });

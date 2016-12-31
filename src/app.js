@@ -15,6 +15,7 @@ app.resources(path.resolve(__dirname, './resources'));
 app.routes(path.resolve(__dirname, './routes/user.js'));
 
 if (require.main === module) {
+  console.log('>>> firing up nom');
   app.start();
 }
 

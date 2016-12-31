@@ -1,22 +1,25 @@
 const spawn = require('child_process').spawn;
 
-describe('Test `npm auth` commands', () => {
-  let nom;
+const purgeCache = require('./cleanup').purgeCache;
 
-  before('setup nom before all tests', () => {
+describe('Test `npm auth` commands', function () {
+  let nomAuth;
+
+  before('setup nom before all tests', function () {
     console.info('Firing up nom...');
-    console.info(`Nom is: ${typeof nom}`);
-    nom = require('../../dist/app.js');
 
     return new Promise((resolve) => {
-      nom.start().then(() => {
+      purgeCache('../../dist/app.js');
+      nomAuth = require('../../dist/app.js');
+      nomAuth.start().then(function () {
         console.info('Nom up and running.');
         resolve();
       });
     });
   });
 
-  it('validate that we can call adduser', () => {
+  it('validate that we can call adduser', function () {
+    this.timeout(30000);
     console.info('Running \'npm adduser\'');
 
     return new Promise((resolve, reject) => {
@@ -37,28 +40,31 @@ describe('Test `npm auth` commands', () => {
       npm.stderr.on('data', (data) => {
         if (data.includes('exit [ 1, true ]')) {
           npm.kill('SIGKILL');
+          console.error('npm adduser failed.');
           reject(new Error('npm threw an error.'));
         } else if (data.includes('exit [ 0, true ]')) {
+          console.info('npm adduser completed successfully.');
           npm.kill('SIGKILL');
           resolve();
         }
       });
-      resolve();
     });
   });
 
-  after('cleanup nom after all tests', () => {
+  after('cleanup nom after all tests', function () {
+    this.timeout(30000);
     console.info('Shutting down nom...');
+
     return new Promise((resolve) => {
-      if (nom) {
-        nom.close().then(() => {
+      if (nomAuth) {
+        nomAuth.close().then(function () {
           console.info('Nom shutdown.');
-          nom = undefined;
-          resolve();
+          nomAuth = undefined;
+          setTimeout(function () { resolve(); }, 2500);
         });
       } else {
         console.info('No nom running, terminating.');
-        nom = undefined;
+        nomAuth = undefined;
         resolve();
       }
     });
