@@ -80,13 +80,6 @@ class UserRoutes extends Routes {
         ctx.status = Ravel.httpCodes.INTERNAL_SERVER_ERROR;
       });
   }
-
-  @mapping(Routes.DELETE, '/token')
-  @before('githubProfile')
-  delete (ctx) {
-    ctx.status = 200;
-    ctx.response.body = {ok: true};
-  }
 }
 
 // Export Routes class
