@@ -5,7 +5,7 @@ const Resource = Ravel.Resource;
 const inject = Ravel.inject;
 const before = Resource.before;
 
--/**
+/**
  - * Endpoint for npm logout
  - *
  - * Since we don't store user credentials on our end,
@@ -22,7 +22,7 @@ class LogoutResource extends Resource {
     this.githubProfile = github.profileMiddleware();
   }
 
-  @before ('githubProfile')
+  @before('githubProfile')
   delete (ctx) {
     ctx.status = 200;
     ctx.response.body = {ok: true};
