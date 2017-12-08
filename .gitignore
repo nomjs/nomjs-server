@@ -4,4 +4,8 @@ npm-debug.log
 docs/*
 reports/*
 dist/*
+test-dist/*
 .idea
+coverage/
+npm-debug.log*
+.travis/docker

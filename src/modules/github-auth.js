@@ -16,9 +16,9 @@ class NonexistentRepoError extends Ravel.Error {
   }
 }
 
-@inject('github')
+@inject('github', 'lodash')
 class GitHubAuth extends Module {
-  constructor (GitHubApi) {
+  constructor (GitHubApi, lodash) {
     super();
     this.github = new GitHubApi({
       // required
@@ -33,14 +33,16 @@ class GitHubAuth extends Module {
       }
     });
     this.bearerRegex = /^(?:Bearer|token) (\w+)$/;
+    this._ = lodash;
   }
 
   /**
    * Synchronous OAuth login. Only works for the next request.
    */
   tokenAuth (token) {
+    this.log.debug('Setting up token auth.');
     this.github.authenticate({
-      type: 'oauth',
+      type: 'token',
       token: token
     });
   }
@@ -53,11 +55,41 @@ class GitHubAuth extends Module {
    */
   verifyToken (token) {
     return this.getOrgs(token)
-    .then(() => {
-      return token;
-    })
-    .catch(() => {
-      return new Error('GitHub OAuth token supplied does not have the read:org scope.');
+      .then(() => {
+        return token;
+      })
+      .catch(() => {
+        return new Error('GitHub OAuth token supplied does not have the read:org scope.');
+      });
+  }
+
+  _createToken (username, password, twoFactorCode) {
+    const headers = {};
+    if (twoFactorCode !== undefined) {
+      headers['X-GitHub-OTP'] = twoFactorCode;
+    }
+
+    return new Promise((resolve, reject) => {
+      this.github.authenticate({
+        type: 'basic',
+        username: username,
+        password: password
+      });
+
+      this.github.authorization.create({
+        scopes: ['read:org'],
+        note: 'nomjs-registry',
+        note_url: 'https://github.com/nomjs/nomjs-registry.git', // eslint-disable-line camelcase
+        headers: headers
+      }, (err, res) => {
+        if (err) {
+          this.log.error('Could not create GitHub authentication token.');
+          reject(err);
+        } else {
+          this.log.debug('GitHub authentication token created.');
+          resolve(res.token);
+        }
+      });
     });
   }
 
@@ -71,26 +103,48 @@ class GitHubAuth extends Module {
    * @param {String} twoFactorCode their current two-factor auth code.
    */
   generateToken (username, password, twoFactorCode) {
-    const headers = {};
-    if (twoFactorCode !== undefined) {
-      headers['X-GitHub-OTP'] = twoFactorCode;
-    }
     return new Promise((resolve, reject) => {
+      this.log.debug('Issuing authentication against GitHub.');
       this.github.authenticate({
         type: 'basic',
         username: username,
         password: password
       });
-      this.github.authorization.create({
-        scopes: ['read:org'],
-        note: 'nomjs-registry',
-        note_url: 'https://github.com/nomjs/nomjs-registry.git', // eslint-disable-line camelcase
-        headers: headers
-      }, (err, res) => {
+
+      this.log.debug('Authentication complete, getting list of existing authentications.');
+      this.github.authorization.getAll({}, (err, res) => {
         if (err) {
-          reject(err);
+          this.log.error('Could not retrieve list of  GitHub authentications.');
+          return reject(err);
+        }
+
+        if (!this._.isArray(res)) {
+          this.log.error('The list of GitHub authentications was not an array.');
+          return reject(err);
+        }
+
+        const existingAuth = res.find(e => e.note === 'nomjs-registry');
+        if (existingAuth) {
+          this.log.info('Existing authentication found, removing it.');
+
+          this.github.authenticate({
+            type: 'basic',
+            username: username,
+            password: password
+          });
+
+          this.github.authorization.delete({id: existingAuth.id}, (err) => {
+            if (err) {
+              this.log.error('Could not remove existing GitHub authentication.');
+              return reject(err);
+            }
+
+            this.log.info('Creating new authentication to replace the one we just removed.');
+            resolve(this._createToken(username, password, twoFactorCode));
+          });
         } else {
-          resolve(res.token);
+          this.log.info('No existing authentication found, creating a new one.');
+          resolve(this._createToken(username, password, twoFactorCode));
         }
       });
     });
@@ -102,10 +156,17 @@ class GitHubAuth extends Module {
    * @return {Promise} resolves with an Object of user info if the token works, rejects otherwise
    */
   getProfile (token) {
+    this.log.debug('Retrieving user profile from GitHub.');
     return new Promise((resolve, reject) => {
       this.tokenAuth(token);
-      this.github.user.get({}, (err, result) => {
-        if (err) { reject(err); } else { resolve(result); }
+      this.github.users.get({}, (err, result) => {
+        if (err) {
+          this.log.error('Could not retrieve user profile.', err.message);
+          reject(err);
+        } else {
+          this.log.debug('Retrieved user profile.');
+          resolve(result);
+        }
       });
     });
   }
@@ -164,7 +225,7 @@ class GitHubAuth extends Module {
    */
   profileMiddleware () {
     const self = this;
-    return function*(next) {
+    return function* (next) {
       const token = this.headers.authorization.match(this.bearerRegex);
       if (token) {
         this.token = token[1];
@@ -187,7 +248,11 @@ class GitHubAuth extends Module {
     return new Promise((resolve, reject) => {
       this.tokenAuth(token);
       this.github.user.getOrgs({}, (err, result) => {
-        if (err) { reject(err); } else { resolve(result); }
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result);
+        }
       });
     });
   }

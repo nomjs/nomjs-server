@@ -3,19 +3,18 @@
 // gulp
 const gulp = require('gulp');
 
-// gulp plugins
-const babel = require('gulp-babel');
-const eslint = require('gulp-eslint');
-const sourcemaps = require('gulp-sourcemaps');
+// plugins
+const plugins = require('gulp-load-plugins')();
 
 // utils
 const del = require('del');
 const spawn = require('child_process').spawn;
 
+const TESTS = ['test-dist/**/*.spec.js'];
 const babelConfig = {
   'retainLines': true
 };
-if (process.execArgv.indexOf('--harmony_async_await') < 0) {
+if (!process.execArgv || process.execArgv.indexOf('--harmony_async_await') < 0) {
   console.log('Transpiling async/await...');
   babelConfig.plugins = ['transform-decorators-legacy', 'transform-async-to-generator'];
 } else {
@@ -24,23 +23,42 @@ if (process.execArgv.indexOf('--harmony_async_await') < 0) {
 }
 
 gulp.task('clean', function () {
-  return del(['dist/**']);
+  return del([
+    'reports', 'dist', 'test-dist'
+  ]);
 });
 
 gulp.task('lint', function () {
   return gulp.src(['./src/**/*.js', './test/**/*.js', 'gulpfile.js'])
-    .pipe(eslint())
-    .pipe(eslint.format())
-    .pipe(eslint.failAfterError());
+    .pipe(plugins.eslint({configFile: '.eslintrc.json'}))
+    .pipe(plugins.eslint.format())
+    .pipe(plugins.eslint.failAfterError());
 });
 
-gulp.task('build', ['clean'], function () {
+gulp.task('transpile-src', ['lint'], function () {
   return gulp.src('src/**/*.js')
-    .pipe(sourcemaps.init())
-    .pipe(babel(babelConfig))
-    .pipe(sourcemaps.write('.'))
+    .pipe(plugins.sourcemaps.init())
+    .pipe(plugins.babel(babelConfig))
+    .pipe(plugins.sourcemaps.write('.'))
     .pipe(gulp.dest('dist'));
 });
+
+gulp.task('transpile-test', ['lint'], function () {
+  return gulp.src('test/**/*.js')
+    .pipe(plugins.sourcemaps.init())
+    .pipe(plugins.babel(babelConfig))
+    .pipe(plugins.sourcemaps.write('.'))
+    .pipe(gulp.dest('test-dist'));
+});
+
+gulp.task('test', ['transpile-src', 'transpile-test'], function () {
+  return gulp.src(TESTS, {read: false})
+    .pipe(plugins.spawnMocha({
+      asyncOnly: true
+    }));
+});
+
+gulp.task('build', ['transpile-src']);
 
 // BEGIN watch stuff
 let server;
@@ -59,15 +77,23 @@ gulp.task('serve', ['build'], function () {
     }
   });
 });
+
 process.on('exit', () => {
   if (server) {
     server.kill();
   }
 });
+
 gulp.task('watch', ['lint', 'serve'], function () {
   gulp.watch('src/**/*.js', {interval: 1000, mode: 'poll'}, ['lint', 'serve']);
   gulp.watch('.ravelrc', {interval: 1000, mode: 'poll'}, ['serve']);
 });
+
+gulp.task('watch-code', ['lint', 'build'], function () {
+  gulp.watch('src/**/*.js', {interval: 1000, mode: 'poll'}, ['lint', 'build']);
+});
 // END watch stuff
 
 gulp.task('default', ['watch']);
+
+gulp.task('dist', ['clean', 'build']);

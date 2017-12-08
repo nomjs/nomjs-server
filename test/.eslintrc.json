@@ -1,0 +1,16 @@
+{
+  "extends": "../.eslintrc.json",
+  "globals": {
+    "describe": false,
+    "it": false,
+    "beforeAll": false,
+    "afterAll": false,
+    "expect": false,
+    "require": false,
+    "module": false,
+    "jasmine": false
+  },
+  "env": {
+    "mocha": true
+  }
+}

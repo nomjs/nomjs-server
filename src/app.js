@@ -1,5 +1,6 @@
 'use strict';
 
+const path = require('path');
 const Ravel = require('ravel');
 
 const app = new Ravel();
@@ -9,7 +10,13 @@ app.registerParameter('rethink port', true);
 app.registerParameter('rethink db name', true);
 app.registerParameter('max package size bytes', true, 10 * 1024 * 1024);
 
-app.modules('./modules');
-app.resources('./resources');
+app.modules(path.resolve(__dirname, './modules'));
+app.resources(path.resolve(__dirname, './resources'));
+app.routes(path.resolve(__dirname, './routes/user.js'));
 
-app.start();
+if (require.main === module) {
+  console.log('>>> firing up nom');
+  app.start();
+}
+
+module.exports = app;

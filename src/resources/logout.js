@@ -6,15 +6,15 @@ const inject = Ravel.inject;
 const before = Resource.before;
 
 /**
- * Endpoint for npm logout
- *
- * Since we don't store user credentials on our end,
- * this is a no-op for now. If we ever do store
- * credentials, then we should delete them here.
- * Endpoint does verify the credentials before responding
- * with 'ok' so that the client erases the login in
- * ~/.npmrc
- */
+ - * Endpoint for npm logout
+ - *
+ - * Since we don't store user credentials on our end,
+ - * this is a no-op for now. If we ever do store
+ - * credentials, then we should delete them here.
+ - * Endpoint does verify the credentials before responding
+ - * with 'ok' so that the client erases the login in
+ - * ~/.npmrc
+ - */
 @inject('github-auth')
 class LogoutResource extends Resource {
   constructor (github) {

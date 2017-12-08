@@ -63,6 +63,7 @@ class Packages extends Module {
   getPackageName (id) {
     const scope = id.match(/^@([\w-]+)\/([\w-]+)$/);
     if (scope === null) {
+      this.log.warn(`client requested an unscoped package: ${id}`);
       throw new UnscopedPackageError(`Package id ${id} is not a scoped package`);
     }
     return {
@@ -103,6 +104,7 @@ class Packages extends Module {
     if (this.isScoped(id)) {
       return this._retrieveInfo(id);
     } else {
+      this.log.warn(`client requested an unscoped package: ${id}`);
       return Promise.reject(new UnscopedPackageError({
         error: 'nom does not accept unscoped packages'
       }));
