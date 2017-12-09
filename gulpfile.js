@@ -10,13 +10,13 @@ const plugins = require('gulp-load-plugins')();
 const del = require('del');
 const spawn = require('child_process').spawn;
 
-const TESTS = ['test-dist/**/*.spec.js'];
 const babelConfig = {
   'retainLines': true
 };
-if (!process.execArgv || process.execArgv.indexOf('--harmony_async_await') < 0) {
+
+if (process.execArgv.indexOf('test') >= 0) {
   console.log('Transpiling async/await...');
-  babelConfig.plugins = ['transform-decorators-legacy', 'transform-async-to-generator'];
+  babelConfig.plugins = ['transform-decorators-legacy', 'istanbul'];
 } else {
   console.log('Using native async/await...');
   babelConfig.plugins = ['transform-decorators-legacy'];
@@ -30,12 +30,12 @@ gulp.task('clean', function () {
 
 gulp.task('lint', function () {
   return gulp.src(['./src/**/*.js', './test/**/*.js', 'gulpfile.js'])
-    .pipe(plugins.eslint({configFile: '.eslintrc.json'}))
+    .pipe(plugins.eslint())
     .pipe(plugins.eslint.format())
     .pipe(plugins.eslint.failAfterError());
 });
 
-gulp.task('transpile-src', ['lint'], function () {
+gulp.task('build', ['lint'], function () {
   return gulp.src('src/**/*.js')
     .pipe(plugins.sourcemaps.init())
     .pipe(plugins.babel(babelConfig))
@@ -43,32 +43,14 @@ gulp.task('transpile-src', ['lint'], function () {
     .pipe(gulp.dest('dist'));
 });
 
-gulp.task('transpile-test', ['lint'], function () {
-  return gulp.src('test/**/*.js')
-    .pipe(plugins.sourcemaps.init())
-    .pipe(plugins.babel(babelConfig))
-    .pipe(plugins.sourcemaps.write('.'))
-    .pipe(gulp.dest('test-dist'));
-});
-
-gulp.task('test', ['transpile-src', 'transpile-test'], function () {
-  return gulp.src(TESTS, {read: false})
-    .pipe(plugins.spawnMocha({
-      asyncOnly: true
-    }));
-});
-
-gulp.task('build', ['transpile-src']);
-
 // BEGIN watch stuff
 let server;
 gulp.task('serve', ['build'], function () {
   if (server) {
     server.kill();
   }
-  server = spawn('node', ['--harmony_async_await', '--debug', 'app.js'], {
+  server = spawn('node', ['--inspect', 'dist/app.js'], {
     stdio: 'inherit',
-    cwd: 'dist',
     env: process.env
   });
   server.on('close', function (code) {
@@ -85,12 +67,21 @@ process.on('exit', () => {
 });
 
 gulp.task('watch', ['lint', 'serve'], function () {
-  gulp.watch('src/**/*.js', {interval: 1000, mode: 'poll'}, ['lint', 'serve']);
-  gulp.watch('.ravelrc', {interval: 1000, mode: 'poll'}, ['serve']);
+  gulp.watch('src/**/*.js', {
+    interval: 1000,
+    mode: 'poll'
+  }, ['lint', 'serve']);
+  gulp.watch('.ravelrc.json', {
+    interval: 1000,
+    mode: 'poll'
+  }, ['serve']);
 });
 
 gulp.task('watch-code', ['lint', 'build'], function () {
-  gulp.watch('src/**/*.js', {interval: 1000, mode: 'poll'}, ['lint', 'build']);
+  gulp.watch('src/**/*.js', {
+    interval: 1000,
+    mode: 'poll'
+  }, ['lint', 'build']);
 });
 // END watch stuff
 

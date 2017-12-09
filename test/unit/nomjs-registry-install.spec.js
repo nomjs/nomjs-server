@@ -19,7 +19,7 @@ describe('Test `npm install` commands', function () {
     console.info('Firing up nom...');
 
     return new Promise((resolve) => {
-      nomInstall = require('../../dist/app.js');
+      nomInstall = require('../../src/app.js');
       nomInstall.start().then(function () {
         console.info('Nom up and running.');
         resolve();

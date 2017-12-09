@@ -1,0 +1,8 @@
+{
+  "retainLines": true,
+  "env": {
+    "test": {
+      "plugins": ["transform-decorators-legacy", "istanbul"]
+    }
+  }
+}

@@ -1,4 +1,6 @@
-# nomjs-registry
+# nomjs-server
+
+[![Build Status](https://travis-ci.org/nomjs/nomjs-server.svg?branch=master)](https://travis-ci.org/nomjs/nomjs-server)
 
 > nom is not npm
 
@@ -34,7 +36,7 @@ $ PWD=`pwd` docker-compose up
 
 ### Log in to nom
 
-Log in to `nom` with your GitHub username/password (won't work if you have two-factor auth turned on):
+Log in to `nom` with your GitHub username/password (won't work if you have two-factor auth turned on - see below for further instructions):
 
 *Note: this method will automatically create an OAuth token for `nom` with the read:org scope for future use*
 
@@ -73,6 +75,5 @@ $ npm --loglevel=verbose  --registry http://0.0.0.0:9080 publish .
 Fire up the containers that we need to back this:
 
 ```cmd
-docker run -p 28015:28015 -p 9081:8080 -d rethinkdb:2.3
-docker run -p 6379:6379 -d  redis:3.2-alpine
+docker-compose up -d redis rethinkdb
 ```

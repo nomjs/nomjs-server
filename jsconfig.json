@@ -1,10 +1,10 @@
 {
-    "compilerOptions": {
-        "target": "ES6",
-        "experimentalDecorators": true
-    },
-    "exclude": [
-      "test-dist/",
-      "node_modules"
-    ]
+  "compilerOptions": {
+      "target": "ES6",
+      "experimentalDecorators": true
+  },
+  "exclude": [
+    "test-dist/",
+    "node_modules"
+  ]
 }

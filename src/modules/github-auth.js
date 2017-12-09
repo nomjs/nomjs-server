@@ -12,7 +12,10 @@ class UserOrgError extends Ravel.Error {
 
 class NonexistentRepoError extends Ravel.Error {
   constructor (org, name) {
-    super(`GitHub repository ${org}/${name} does not exist.`, Ravel.httpCodes.NOT_FOUND);
+    super(
+      `GitHub repository ${org}/${name} does not exist.`,
+      Ravel.httpCodes.NOT_FOUND
+    );
   }
 }
 
@@ -59,7 +62,9 @@ class GitHubAuth extends Module {
         return token;
       })
       .catch(() => {
-        return new Error('GitHub OAuth token supplied does not have the read:org scope.');
+        return new Error(
+          'GitHub OAuth token supplied does not have the read:org scope.'
+        );
       });
   }
 
@@ -76,20 +81,23 @@ class GitHubAuth extends Module {
         password: password
       });
 
-      this.github.authorization.create({
-        scopes: ['read:org'],
-        note: 'nomjs-registry',
-        note_url: 'https://github.com/nomjs/nomjs-registry.git', // eslint-disable-line camelcase
-        headers: headers
-      }, (err, res) => {
-        if (err) {
-          this.log.error('Could not create GitHub authentication token.');
-          reject(err);
-        } else {
-          this.log.debug('GitHub authentication token created.');
-          resolve(res.token);
+      this.github.authorization.create(
+        {
+          scopes: ['read:org'],
+          note: 'nomjs-registry',
+          note_url: 'https://github.com/nomjs/nomjs-registry.git', // eslint-disable-line camelcase
+          headers: headers
+        },
+        (err, res) => {
+          if (err) {
+            this.log.error('Could not create GitHub authentication token.');
+            reject(err);
+          } else {
+            this.log.debug('GitHub authentication token created.');
+            resolve(res.token);
+          }
         }
-      });
+      );
     });
   }
 
@@ -111,7 +119,9 @@ class GitHubAuth extends Module {
         password: password
       });
 
-      this.log.debug('Authentication complete, getting list of existing authentications.');
+      this.log.debug(
+        'Authentication complete, getting list of existing authentications.'
+      );
       this.github.authorization.getAll({}, (err, res) => {
         if (err) {
           this.log.error('Could not retrieve list of  GitHub authentications.');
@@ -119,7 +129,9 @@ class GitHubAuth extends Module {
         }
 
         if (!this._.isArray(res)) {
-          this.log.error('The list of GitHub authentications was not an array.');
+          this.log.error(
+            'The list of GitHub authentications was not an array.'
+          );
           return reject(err);
         }
 
@@ -133,17 +145,28 @@ class GitHubAuth extends Module {
             password: password
           });
 
-          this.github.authorization.delete({id: existingAuth.id}, (err) => {
-            if (err) {
-              this.log.error('Could not remove existing GitHub authentication.');
-              return reject(err);
-            }
+          this.github.authorization.delete(
+            {
+              id: existingAuth.id
+            },
+            err => {
+              if (err) {
+                this.log.error(
+                  'Could not remove existing GitHub authentication.'
+                );
+                return reject(err);
+              }
 
-            this.log.info('Creating new authentication to replace the one we just removed.');
-            resolve(this._createToken(username, password, twoFactorCode));
-          });
+              this.log.info(
+                'Creating new authentication to replace the one we just removed.'
+              );
+              resolve(this._createToken(username, password, twoFactorCode));
+            }
+          );
         } else {
-          this.log.info('No existing authentication found, creating a new one.');
+          this.log.info(
+            'No existing authentication found, creating a new one.'
+          );
           resolve(this._createToken(username, password, twoFactorCode));
         }
       });
@@ -181,17 +204,24 @@ class GitHubAuth extends Module {
   canAdministerRepository (token, scope, repoName) {
     return new Promise((resolve, reject) => {
       this.tokenAuth(token);
-      this.github.repos.get({user: scope, repo: repoName}, (err, result) => {
-        if (err || !result || !result.permissions.admin) { // { admin: true, push: true, pull: true }
-          if (err.code === 404) {
-            reject(new NonexistentRepoError(scope, repoName));
+      this.github.repos.get(
+        {
+          user: scope,
+          repo: repoName
+        },
+        (err, result) => {
+          if (err || !result || !result.permissions.admin) {
+            // { admin: true, push: true, pull: true }
+            if (err.code === 404) {
+              reject(new NonexistentRepoError(scope, repoName));
+            } else {
+              reject(err);
+            }
           } else {
-            reject(err);
+            resolve();
           }
-        } else {
-          resolve();
         }
-      });
+      );
     });
   }
 
@@ -205,17 +235,24 @@ class GitHubAuth extends Module {
   canPushToRepository (token, scope, repoName) {
     return new Promise((resolve, reject) => {
       this.tokenAuth(token);
-      this.github.repos.get({user: scope, repo: repoName}, (err, result) => {
-        if (err || !result || !result.permissions.push) { // { admin: true, push: true, pull: true }
-          if (err.code === 404) {
-            reject(new NonexistentRepoError(scope, repoName));
+      this.github.repos.get(
+        {
+          user: scope,
+          repo: repoName
+        },
+        (err, result) => {
+          if (err || !result || !result.permissions.push) {
+            // { admin: true, push: true, pull: true }
+            if (err.code === 404) {
+              reject(new NonexistentRepoError(scope, repoName));
+            } else {
+              reject(err);
+            }
           } else {
-            reject(err);
+            resolve();
           }
-        } else {
-          resolve();
         }
-      });
+      );
     });
   }
 
@@ -225,16 +262,18 @@ class GitHubAuth extends Module {
    */
   profileMiddleware () {
     const self = this;
-    return function* (next) {
+    return function (next) {
       const token = this.headers.authorization.match(this.bearerRegex);
       if (token) {
         this.token = token[1];
-        yield self.getProfile(token[1]).then((profile) => {
+        self.getProfile(token[1]).then(profile => {
           this.user = profile;
         });
-        yield next;
+        return next();
       } else {
-        throw new self.ApplicationError.IllegalValueError('GitHub OAuth bearer token not found in request headers.');
+        throw new self.ApplicationError.IllegalValueError(
+          'GitHub OAuth bearer token not found in request headers.'
+        );
       }
     };
   }
@@ -262,7 +301,7 @@ class GitHubAuth extends Module {
    * @return {Promise} resolves if the given user is in the specified org, rejects otherwise
    */
   userInOrg (token, orgName) {
-    return this.getOrgs(token).then((orgs) => {
+    return this.getOrgs(token).then(orgs => {
       if (orgs.filter(o => o.login === orgName).length === 1) {
         return Promise.resolve();
       } else {

@@ -32,7 +32,7 @@ class UserRoutes extends Routes {
       return new Promise((resolve, reject) => {
         this.log.warn('No "name" field provided for authentication, faling.');
         ctx.status = Ravel.httpCodes.INTERNAL_SERVER_ERROR;
-        reject('No "name" field provided for authentication.');
+        reject(new Error('No "name" field provided for authentication.'));
       });
     }
 

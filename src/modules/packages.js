@@ -24,7 +24,10 @@ class ExistingVersionError extends Ravel.Error {
 
 class PrivatePackageError extends Ravel.Error {
   constructor () {
-    super('nomjs-registry does not accept private packages', Ravel.httpCodes.BAD_REQUEST);
+    super(
+      'nomjs-registry does not accept private packages',
+      Ravel.httpCodes.BAD_REQUEST
+    );
   }
 }
 
@@ -45,7 +48,6 @@ class MaxPackageSizeError extends Ravel.Error {
  */
 @inject('rethink')
 class Packages extends Module {
-
   constructor (rethink) {
     super();
     this.rethink = rethink;
@@ -57,14 +59,16 @@ class Packages extends Module {
   }
 
   getScope (id) {
-    this.getPackageName(id).scope;
+    return this.getPackageName(id).scope;
   }
 
   getPackageName (id) {
     const scope = id.match(/^@([\w-]+)\/([\w-]+)$/);
     if (scope === null) {
       this.log.warn(`client requested an unscoped package: ${id}`);
-      throw new UnscopedPackageError(`Package id ${id} is not a scoped package`);
+      throw new UnscopedPackageError(
+        `Package id ${id} is not a scoped package`
+      );
     }
     return {
       scope: scope[1],
@@ -72,18 +76,20 @@ class Packages extends Module {
     };
   }
 
-  _retrieveInfo (id) { // eslint-disable-line no-unused-vars
-    return this.rethink.getPackage(id)
-      .catch((err) => {
-        if (err instanceof this.ApplicationError.NotFound) {
-          // create new package;
-          return Promise.reject(new UnsubmittedPackageError({
+  _retrieveInfo (id) {
+    // eslint-disable-line no-unused-vars
+    return this.rethink.getPackage(id).catch(err => {
+      if (err instanceof this.ApplicationError.NotFound) {
+        // create new package;
+        return Promise.reject(
+          new UnsubmittedPackageError({
             error: `nom can't find the package you're looking for.\nPlease encourage the developer to submit it to nom!`
-          }));
-        } else {
-          return Promise.reject(err);
-        }
-      });
+          })
+        );
+      } else {
+        return Promise.reject(err);
+      }
+    });
   }
 
   /**
@@ -105,19 +111,25 @@ class Packages extends Module {
       return this._retrieveInfo(id);
     } else {
       this.log.warn(`client requested an unscoped package: ${id}`);
-      return Promise.reject(new UnscopedPackageError({
-        error: 'nom does not accept unscoped packages'
-      }));
+      return Promise.reject(
+        new UnscopedPackageError({
+          error: 'nom does not accept unscoped packages'
+        })
+      );
     }
   }
 
   shasum (id, version) {
-    return this.info(id).then((info) => {
+    return this.info(id).then(info => {
       return new Promise((resolve, reject) => {
         try {
           resolve(info.versions[version].dist.shasum);
         } catch (err) {
-          reject(new Error(`shasum not found for package ${id} at version ${version}`));
+          reject(
+            new Error(
+              `shasum not found for package ${id} at version ${version}`
+            )
+          );
         }
       });
     });
@@ -126,10 +138,12 @@ class Packages extends Module {
   getLatestPackageVersion (npmPackageInfo) {
     try {
       const semver = npmPackageInfo['dist-tags'].latest;
-      if (semver === null) { throw new Error(); }
+      if (semver === null) {
+        throw new Error();
+      }
       return semver;
     } catch (err) {
-      throw new Error('no version with tag \'latest\'');
+      throw new Error("no version with tag 'latest'");
     }
   }
 
@@ -138,15 +152,23 @@ class Packages extends Module {
   }
 
   getTarballFromRequest (name, version, npmPackageInfo) {
-    if (npmPackageInfo._attachments === undefined || npmPackageInfo._attachments[`${name}-${version}.tgz`] === undefined) {
-      throw new MissingAttachmentError(`Tarball for package ${name} at version ${version} not found.`);
+    if (
+      npmPackageInfo._attachments === undefined ||
+      npmPackageInfo._attachments[`${name}-${version}.tgz`] === undefined
+    ) {
+      throw new MissingAttachmentError(
+        `Tarball for package ${name} at version ${version} not found.`
+      );
     } else {
       const attachment = npmPackageInfo._attachments[`${name}-${version}.tgz`];
       const buff = Buffer.from(attachment.data, 'base64');
       const maxSize = this.params.get('max package size bytes');
       if (buff.length > maxSize) {
         throw new MaxPackageSizeError(
-          `Tarball for package ${name} at version ${version} exceeds maximum package size of ${maxSize} bytes`);
+          `Tarball for package ${name} at version ${
+            version
+          } exceeds maximum package size of ${maxSize} bytes`
+        );
       }
       return buff;
     }
@@ -173,39 +195,69 @@ class Packages extends Module {
       const currentTime = new Date();
       const pInfo = Object.create(null);
       // reject private packages
-      if (args.private) { throw new PrivatePackageError(); }
+      if (args.private) {
+        throw new PrivatePackageError();
+      }
       // get latest info from the versions hash
       const latest = this.getLatestPackageInfo(args);
       // copy over things we need
       pInfo.name = args.name;
-      if (args.description) { pInfo.description = args.description; }
+      if (args.description) {
+        pInfo.description = args.description;
+      }
       pInfo['dist-tags'] = args['dist-tags'];
       pInfo.versions = args.versions;
-      if (args.readme) { pInfo.readme = args.readme; }
-      pInfo.maintainers = [{
-        id: publisher.id,
-        name: publisher.login,
-        email: publisher.email,
-        profile: publisher.html_url
-      }]; // TODO Concat others on update .
+      if (args.readme) {
+        pInfo.readme = args.readme;
+      }
+      pInfo.maintainers = [
+        {
+          id: publisher.id,
+          name: publisher.login,
+          email: publisher.email,
+          profile: publisher.html_url
+        }
+      ]; // TODO Concat others on update .
       pInfo.time = {
         modified: currentTime.toISOString(),
         created: currentTime.toISOString()
       };
       pInfo.time[latest.version] = currentTime.toISOString();
-      if (latest.contributors) { pInfo.contributors = latest.contributors; }
-      if (latest.author) { pInfo.author = latest.author; }
-      if (latest.readmeFilename) { pInfo.readmeFilename = latest.readmeFilename; }
-      if (latest.homepage) { pInfo.homepage = latest.homepage; }
-      if (latest.repository) { pInfo.repository = latest.repository; }
-      if (latest.bugs) { pInfo.bugs = latest.bugs; }
-      if (latest.license) { pInfo.license = latest.license; }
-      if (latest.keywords) { pInfo.keywords = latest.keywords; }
+      if (latest.contributors) {
+        pInfo.contributors = latest.contributors;
+      }
+      if (latest.author) {
+        pInfo.author = latest.author;
+      }
+      if (latest.readmeFilename) {
+        pInfo.readmeFilename = latest.readmeFilename;
+      }
+      if (latest.homepage) {
+        pInfo.homepage = latest.homepage;
+      }
+      if (latest.repository) {
+        pInfo.repository = latest.repository;
+      }
+      if (latest.bugs) {
+        pInfo.bugs = latest.bugs;
+      }
+      if (latest.license) {
+        pInfo.license = latest.license;
+      }
+      if (latest.keywords) {
+        pInfo.keywords = latest.keywords;
+      }
       // store blob and package info
-      const buffer = this.getTarballFromRequest(pInfo.name, latest.version, args);
-      return this.rethink.createTarball(`${pInfo.name}-${latest.version}.tgz`, buffer).then(() => {
-        return this.rethink.createPackage(pInfo);
-      });
+      const buffer = this.getTarballFromRequest(
+        pInfo.name,
+        latest.version,
+        args
+      );
+      return this.rethink
+        .createTarball(`${pInfo.name}-${latest.version}.tgz`, buffer)
+        .then(() => {
+          return this.rethink.createPackage(pInfo);
+        });
     } catch (err) {
       this.log.error(err.stack);
       return Promise.reject(err);
@@ -229,23 +281,35 @@ class Packages extends Module {
     try {
       const currentTime = new Date();
       // reject private packages
-      if (newInfo.private) { throw new PrivatePackageError(); }
+      if (newInfo.private) {
+        throw new PrivatePackageError();
+      }
       const oldVersion = this.getLatestPackageVersion(existing);
       const newVersion = this.getLatestPackageVersion(newInfo);
 
       if (newVersion === oldVersion) {
-        throw new ExistingVersionError(`You cannot publish over the previously published version ${oldVersion}`);
+        throw new ExistingVersionError(
+          `You cannot publish over the previously published version ${
+            oldVersion
+          }`
+        );
       }
 
       const latest = this.getLatestPackageInfo(newInfo);
 
-      if (newInfo.description) { existing.description = newInfo.description; }
+      if (newInfo.description) {
+        existing.description = newInfo.description;
+      }
       existing['dist-tags'].latest = newInfo['dist-tags'].latest; // overwrite latest tag
       existing.versions[newVersion] = latest; // add package info to 'versions' hash
       // overwrite package metadata with latest info
-      if (newInfo.readme) { existing.readme = newInfo.readme; }
+      if (newInfo.readme) {
+        existing.readme = newInfo.readme;
+      }
       // update maintainer info (push new, update existing)
-      const existingMaintainers = existing.maintainers.filter(m => m.id === publisher.id);
+      const existingMaintainers = existing.maintainers.filter(
+        m => m.id === publisher.id
+      );
       if (existingMaintainers.length === 0) {
         existing.maintainers.push({
           id: publisher.id,
@@ -262,19 +326,41 @@ class Packages extends Module {
       }
       existing.time.modified = currentTime.toISOString();
       existing.time[newVersion] = currentTime.toISOString();
-      if (latest.contributors) { existing.contributors = latest.contributors; }
-      if (latest.author) { existing.author = latest.author; }
-      if (latest.readmeFilename) { existing.readmeFilename = latest.readmeFilename; }
-      if (latest.homepage) { existing.homepage = latest.homepage; }
-      if (latest.repository) { existing.repository = latest.repository; }
-      if (latest.bugs) { existing.bugs = latest.bugs; }
-      if (latest.license) { existing.license = latest.license; }
-      if (latest.keywords) { existing.keywords = latest.keywords; }
+      if (latest.contributors) {
+        existing.contributors = latest.contributors;
+      }
+      if (latest.author) {
+        existing.author = latest.author;
+      }
+      if (latest.readmeFilename) {
+        existing.readmeFilename = latest.readmeFilename;
+      }
+      if (latest.homepage) {
+        existing.homepage = latest.homepage;
+      }
+      if (latest.repository) {
+        existing.repository = latest.repository;
+      }
+      if (latest.bugs) {
+        existing.bugs = latest.bugs;
+      }
+      if (latest.license) {
+        existing.license = latest.license;
+      }
+      if (latest.keywords) {
+        existing.keywords = latest.keywords;
+      }
       // store blob and package info
-      const buffer = this.getTarballFromRequest(existing.name, newVersion, newInfo);
-      return this.rethink.createTarball(`${existing.name}-${newVersion}.tgz`, buffer).then(() => {
-        return this.rethink.updatePackage(newInfo);
-      });
+      const buffer = this.getTarballFromRequest(
+        existing.name,
+        newVersion,
+        newInfo
+      );
+      return this.rethink
+        .createTarball(`${existing.name}-${newVersion}.tgz`, buffer)
+        .then(() => {
+          return this.rethink.updatePackage(newInfo);
+        });
     } catch (err) {
       this.log.error(err.stack);
       return Promise.reject(err);
@@ -294,12 +380,13 @@ class Packages extends Module {
    * @return {Promise} resolves when package publish is complete, rejects with any errors
    */
   publish (publisher, args) {
-    return this.rethink.getPackage(args.name)
-      .then((existing) => {
+    return this.rethink
+      .getPackage(args.name)
+      .then(existing => {
         // update existing package
         return this.updatePackage(publisher, existing, args);
       })
-      .catch((err) => {
+      .catch(err => {
         if (err instanceof this.ApplicationError.NotFound) {
           // create new package;
           return this.createPackage(publisher, args);
