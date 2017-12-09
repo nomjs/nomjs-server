@@ -24,12 +24,11 @@ cache:
 
 before_install:
   - ./.travis/rehydrate_docker_cache.sh
-  - docker run --name rethinkdb -p 28015:28015 -p 9081:8080 -d rethinkdb:2.3
-  - docker run --name redis -p 6379:6379 -d redis:3.2-alpine
+  - docker-compose up -d redis rethinkdb
   - npm install
 
 script:
-  - node ./node_modules/gulp/bin/gulp.js --color --gulpfile gulpfile.js test
+  - npm run test
 
 before_cache:
   - ./.travis/generate_docker_cache.sh
