@@ -24,9 +24,6 @@ class GitHubAuth extends Module {
   constructor (GitHubApi, lodash) {
     super();
     this.github = new GitHubApi({
-      // required
-      version: '3.0.0',
-      // optional
       // debug: true,
       protocol: 'https',
       host: 'api.github.com', // should be api.github.com for GitHub
@@ -128,14 +125,14 @@ class GitHubAuth extends Module {
           return reject(err);
         }
 
-        if (!this._.isArray(res)) {
+        if (!this._.isArray(res.data)) {
           this.log.error(
             'The list of GitHub authentications was not an array.'
           );
           return reject(err);
         }
 
-        const existingAuth = res.find(e => e.note === 'nomjs-registry');
+        const existingAuth = res.data.find(e => e.note === 'nomjs-registry');
         if (existingAuth) {
           this.log.info('Existing authentication found, removing it.');
 
@@ -188,7 +185,7 @@ class GitHubAuth extends Module {
           reject(err);
         } else {
           this.log.debug('Retrieved user profile.');
-          resolve(result);
+          resolve(result.data);
         }
       });
     });
@@ -290,7 +287,7 @@ class GitHubAuth extends Module {
         if (err) {
           reject(err);
         } else {
-          resolve(result);
+          resolve(result.data);
         }
       });
     });

@@ -14,7 +14,7 @@ describe('Test `npm auth` commands', function () {
     console.info('Firing up nom...');
 
     return new Promise((resolve) => {
-      nomAuth = require('../../dist/app.js');
+      nomAuth = require('../../src/app.js');
       nomAuth.start().then(function () {
         console.info('Nom up and running.');
         resolve();
