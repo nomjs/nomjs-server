@@ -29,7 +29,7 @@ before_install:
   - npm install
 
 script:
-  - node --harmony_async_await ./node_modules/gulp/bin/gulp.js --color --gulpfile gulpfile.js test
+  - node ./node_modules/gulp/bin/gulp.js --color --gulpfile gulpfile.js test
 
 before_cache:
   - ./.travis/generate_docker_cache.sh
