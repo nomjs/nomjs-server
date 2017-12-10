@@ -71,6 +71,14 @@
     "nyc": "11.3.0",
     "shelljs": "0.7.8"
   },
+  "babel": {
+    "retainLines": true,
+    "env": {
+      "test": {
+        "plugins": ["transform-decorators-legacy", "istanbul"]
+      }
+    }
+  },
   "nyc": {
     "sourceMap": false,
     "instrument": false,

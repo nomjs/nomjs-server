@@ -27,26 +27,6 @@ describe('Test `npm install` commands', function () {
     });
   });
 
-  it('validate we can proxy a package', function () {
-    return new Promise((resolve) => {
-      console.info('Running \'npm install\'');
-      shell.exec(`npm --loglevel=info --registry http://127.0.0.1:9080 --prefix ./test-node-modules install leftpad`, (code, stdout, stderr) => {
-        expect(code).to.equal(0);
-        resolve();
-      });
-    });
-  });
-
-  it('validate we can install a package', function () {
-    return new Promise((resolve) => {
-      console.info('Running \'npm install\'');
-      shell.exec(`npm --loglevel=info --registry http://127.0.0.1:9080 --prefix ./test-node-modules install @mlaccetti/null`, (code, stdout, stderr) => {
-        expect(code).to.equal(0);
-        resolve();
-      });
-    });
-  });
-
   after('cleanup nom after all tests', function () {
     mockery.disable();
 
@@ -64,6 +44,26 @@ describe('Test `npm install` commands', function () {
         console.info('No nom running, terminating.');
         resolve();
       }
+    });
+  });
+
+  it('validate we can proxy a package', function () {
+    return new Promise((resolve) => {
+      console.info('Running \'npm install\'');
+      shell.exec(`npm --loglevel=info --registry http://127.0.0.1:9080 --prefix ./test-node-modules install leftpad`, (code, stdout, stderr) => {
+        expect(code).to.equal(0);
+        resolve();
+      });
+    });
+  });
+
+  it('validate we can install a package', function () {
+    return new Promise((resolve) => {
+      console.info('Running \'npm install\'');
+      shell.exec(`npm --loglevel=info --registry http://127.0.0.1:9080 --prefix ./test-node-modules install @mlaccetti/null`, (code, stdout, stderr) => {
+        expect(code).to.equal(0);
+        resolve();
+      });
     });
   });
 });

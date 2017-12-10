@@ -22,6 +22,21 @@ describe('Test `npm auth` commands', function () {
     });
   });
 
+  after('cleanup nom after all tests', function (done) {
+    mockery.disable();
+    console.info('Shutting down nom...');
+
+    if (nomAuth) {
+      nomAuth.close().then(function () {
+        console.info('Nom shutdown.');
+        done();
+      });
+    } else {
+      console.info('No nom running, terminating.');
+      done();
+    }
+  });
+
   it('validate that we can call adduser', function () {
     this.timeout(30000);
     console.info('Running \'npm adduser\'');
@@ -52,23 +67,6 @@ describe('Test `npm auth` commands', function () {
           resolve();
         }
       });
-    });
-  });
-
-  after('cleanup nom after all tests', function () {
-    mockery.disable();
-    console.info('Shutting down nom...');
-
-    return new Promise((resolve) => {
-      if (nomAuth) {
-        nomAuth.close().then(function () {
-          console.info('Nom shutdown.');
-          resolve();
-        });
-      } else {
-        console.info('No nom running, terminating.');
-        resolve();
-      }
     });
   });
 });
